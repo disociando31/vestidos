@@ -1,6 +1,14 @@
 <?php
 
 return [
+    'providers' => [
+    // ...
+    Barryvdh\DomPDF\ServiceProvider::class,
+],
+'aliases' => [
+    // ...
+    'Pdf' => Barryvdh\DomPDF\Facade\Pdf::class,
+],
 
     /*
     |--------------------------------------------------------------------------
