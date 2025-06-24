@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->string('nombre');
             $table->string('codigo')->unique(); // VES001, TRA002, etc.
             $table->text('descripcion');
-            $table->decimal('precio_renta', 10, 2);
+            $table->decimal('precio_renta', 15, 2);
             $table->string('estado')->default('disponible'); // disponible, rentado, mantenimiento
             $table->timestamps();
         });

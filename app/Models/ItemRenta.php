@@ -13,7 +13,6 @@ class ItemRenta extends Model
         'cantidad',
         'precio_unitario',
         'subtotal',
-        'iva',
         'descuento',
         'total',
         'atributos'  // JSON con detalles específicos

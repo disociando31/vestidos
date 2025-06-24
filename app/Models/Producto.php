@@ -15,7 +15,16 @@ class Producto extends Model
         'precio_renta',
         'estado'        // disponible, rentado, mantenimiento
     ];
-    
+    public function index()
+{
+    $productos = Producto::with(['atributos', 'imagenes'])
+        ->orderBy('tipo')
+        ->orderBy('nombre')
+        ->paginate(20);
+
+    return view('productos.index', compact('productos'));
+}
+
     /**
      * Relación con los atributos del producto
      */

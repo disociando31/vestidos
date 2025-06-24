@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('pagos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('renta_id')->constrained('rentas');
+            $table->foreignId('renta_id')->constrained('rentas')->onDelete('cascade');
             $table->decimal('monto', 10, 2);
             $table->string('metodo_pago'); // efectivo, tarjeta, transferencia
             $table->text('notas')->nullable();

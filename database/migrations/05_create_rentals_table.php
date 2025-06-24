@@ -16,7 +16,6 @@ return new class extends Migration {
             $table->decimal('monto_pagado', 10, 2)->default(0);
             $table->string('estado'); // pendiente, parcial, pagado, devuelto, atrasado
             $table->text('notas')->nullable();
-            $table->string('tipo_gancho')->nullable(); // Módera u otros
             $table->string('recibido_por'); // Nombre del administrador
             $table->timestamps();
         });

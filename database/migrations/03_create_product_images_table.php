@@ -5,9 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up()
+    public function up(): void
     {
-        Schema::create('imagenes_producto', function (Blueprint $table) {
+        Schema::create('imagen_productos', function (Blueprint $table) {
             $table->id();
             $table->foreignId('producto_id')->constrained('productos')->onDelete('cascade');
             $table->string('ruta');
@@ -16,8 +16,8 @@ return new class extends Migration {
         });
     }
 
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('imagenes_producto');
+        Schema::dropIfExists('imagen_productos');
     }
 };

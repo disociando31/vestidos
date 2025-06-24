@@ -52,7 +52,8 @@ return [
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
-        Illuminate\Filesystem\FilesystemServiceProvider::class, 
+        Illuminate\Filesystem\FilesystemServiceProvider::class,
+        Illuminate\Encryption\EncryptionServiceProvider::class,
 
         /*
          * Package Service Providers...

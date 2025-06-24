@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-
+use Illuminate\Database\Eloquent\CastsAttribute;
 class Renta extends Model
 {
     protected $fillable = [
@@ -16,18 +16,22 @@ class Renta extends Model
         'monto_total',
         'monto_pagado',
         'estado',       // pendiente, parcial, pagado, devuelto, atrasado
-        'notas',
-        'tipo_gancho',  // Módera u otros
+        'notas',  // Módera u otros
         'recibido_por'  // Quién registró la renta
     ];
     
-    protected $dates = ['fecha_renta', 'fecha_devolucion'];
-    
-    public function cliente(): BelongsTo
+    protected $casts = [
+        'fecha_renta' => 'datetime',
+        'fecha_devolucion' => 'datetime',
+    ];
+    public function cliente()
     {
         return $this->belongsTo(Cliente::class);
     }
-    
+    public function productos()
+    {
+        return $this->belongsToMany(Producto::class, 'detalle_rentas'); // Ajusta si usas otro nombre de tabla pivot
+    }
     public function items(): HasMany
     {
         return $this->hasMany(ItemRenta::class);

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class Pago extends Model
 {
@@ -14,21 +15,21 @@ class Pago extends Model
         'notas',
         'recibido_por'
     ];
-    
+
     public function renta(): BelongsTo
     {
         return $this->belongsTo(Renta::class);
     }
-    
-    public function cliente()
+
+    public function cliente(): HasOneThrough
     {
         return $this->hasOneThrough(
             Cliente::class,
             Renta::class,
-            'id',
-            'id',
-            'renta_id',
-            'cliente_id'
+            'id',         // Foreign key on Rentas
+            'id',         // Foreign key on Clientes
+            'renta_id',   // Local key on Pagos
+            'cliente_id'  // Local key on Rentas
         );
     }
 }

@@ -17,9 +17,16 @@ use App\Models\Renta;
 */
 
 // Página principal → Calendario
-Route::get('/', [CalendarioController::class, 'index'])->name('calendario.index');
-Route::get('/calendario/eventos', [CalendarioController::class, 'eventos'])->name('calendario.eventos');
+Route::get('/',[\App\Http\Controllers\CalendarioController::class, 'index'])->name('calendario.index');
 
+// API eventos para FullCalendar
+Route::get('/calendario/eventos', [CalendarioController::class, 'eventos'])->name('calendario.eventos');
+// Reportes
+Route::prefix('reportes')->group(function () {
+    Route::get('/diario', [\App\Http\Controllers\ReporteController::class, 'diario'])->name('reportes.diario');
+    Route::get('/semanal', [\App\Http\Controllers\ReporteController::class, 'semanal'])->name('reportes.semanal');
+    Route::get('/mensual', [\App\Http\Controllers\ReporteController::class, 'mensual'])->name('reportes.mensual');
+});
 // Productos
 Route::resource('productos', ProductoController::class)->names([
     'index'   => 'productos.index',
@@ -53,18 +60,22 @@ Route::resource('rentas', RentaController::class)->names([
     'destroy' => 'rentas.eliminar',
 ]);
 
-// Devolución de rentas
+// Devolución de rentas → POST
 Route::post('/rentas/{renta}/devolver', [RentaController::class, 'devolver'])->name('rentas.devolver');
-
-// Pagos
-Route::prefix('pagos')->group(function () {
-    Route::get('/', [PagoController::class, 'index'])->name('pagos.index');
-    Route::get('/{pago}', [PagoController::class, 'show'])->name('pagos.show');
-});
 
 // Facturas
 Route::get('/rentas/{renta}/factura', [FacturaController::class, 'mostrar'])->name('facturas.mostrar');
 Route::get('/rentas/{renta}/factura/descargar', [FacturaController::class, 'descargar'])->name('facturas.descargar');
+
+// Pagos
+Route::prefix('pagos')->group(function () {
+    Route::get('/', [PagoController::class, 'index'])->name('pagos.index');
+    Route::get('/reporte', [PagoController::class, 'reporte'])->name('pagos.reporte');
+    Route::get('/crear/{renta}', [PagoController::class, 'create'])->name('pagos.crear');
+    Route::post('/guardar/{renta}', [PagoController::class, 'store'])->name('pagos.store');
+    Route::get('/{pago}', [PagoController::class, 'show'])->name('pagos.show');
+    Route::delete('/{pago}', [PagoController::class, 'destroy'])->name('pagos.eliminar');
+});
 
 // Dashboard (estadísticas)
 Route::get('/dashboard', function () {
@@ -82,13 +93,3 @@ Route::get('/dashboard', function () {
         'rentasAtrasadas'
     ));
 })->name('dashboard');
-
-// API para eventos del calendario (FullCalendar)
-Route::get('/calendario/eventos', [CalendarioController::class, 'eventos'])->name('calendario.eventos');
-Route::prefix('pagos')->group(function () {
-    Route::get('/', [PagoController::class, 'index'])->name('pagos.index');
-    Route::get('/reporte', [PagoController::class, 'reporte'])->name('pagos.reporte');
-    Route::get('/crear/{renta}', [PagoController::class, 'create'])->name('pagos.crear');
-    Route::post('/guardar/{renta}', [PagoController::class, 'store'])->name('pagos.store');
-    Route::delete('/{pago}', [PagoController::class, 'destroy'])->name('pagos.eliminar');
-});

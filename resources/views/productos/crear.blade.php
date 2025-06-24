@@ -21,10 +21,6 @@
                         <option value="vestido_15">Vestido 15 Años</option>
                     </select>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">Código</label>
-                    <input type="text" name="codigo" class="form-control" required>
-                </div>
             </div>
 
             <div class="mb-3">
@@ -68,10 +64,10 @@ document.getElementById('agregar-atributo').addEventListener('click', function()
     newAttr.className = 'row mb-2 atributo';
     newAttr.innerHTML = `
         <div class="col-md-5">
-            <input type="text" name="atributos[nombre][]" class="form-control" placeholder="Nombre del atributo" required>
+            <input type="text" name="atributo_nombre[]" class="form-control" placeholder="Nombre del atributo" required>
         </div>
         <div class="col-md-5">
-            <input type="text" name="atributos[valor][]" class="form-control" placeholder="Valor" required>
+            <input type="text" name="atributo_valor[]" class="form-control" placeholder="Valor" required>
         </div>
         <div class="col-md-2">
             <button type="button" class="btn btn-sm btn-danger remover-atributo">X</button>
