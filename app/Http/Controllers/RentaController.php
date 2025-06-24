@@ -99,10 +99,12 @@ class RentaController extends Controller
                     'renta_id' => $renta->id,
                     'monto' => $abono,
                     'fecha_pago' => now(),
-                    'metodo_pago' => 'efectivo', // o seleccionable en el formulario
-                    'observaciones' => 'Abono inicial'
+                    'metodo_pago' => 'efectivo', // opcionalmente podrías permitir elegir
+                    'notas' => 'Abono inicial', // 🔔 corregido aquí → era 'observaciones'
+                    'recibido_por' => $validado['recibido_por']
                 ]);
 
+                $renta->increment('monto_pagado', $abono); // 🔔 aseguramos que se sume al monto_pagado
                 $renta->actualizarEstado();
             }
 
@@ -146,5 +148,34 @@ class RentaController extends Controller
             DB::rollBack();
             return back()->with('error', 'Error al registrar la devolución: ' . $e->getMessage());
         }
+    }
+
+    // 🔔 NUEVO MÉTODO para FullCalendar → filtra solo rentas activas
+    public function eventos()
+    {
+        $rentas = Renta::where('estado', '!=', 'devuelto')->with('cliente')->get();
+
+        $eventos = $rentas->map(function ($renta) {
+            return [
+                'id' => $renta->id,
+                'title' => $renta->cliente->nombre,
+                'start' => $renta->fecha_renta,
+                'end' => $renta->fecha_devolucion,
+                'color' => $this->getColorPorEstado($renta->estado),
+                'url' => route('rentas.show', $renta),
+            ];
+        });
+
+        return response()->json($eventos);
+    }
+
+    protected function getColorPorEstado($estado)
+    {
+        return match ($estado) {
+            'pendiente' => '#ffc107', // amarillo
+            'abonado' => '#17a2b8',   // azul claro
+            'pagado' => '#28a745',    // verde
+            default => '#6c757d',     // gris
+        };
     }
 }

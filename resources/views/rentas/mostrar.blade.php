@@ -85,25 +85,29 @@
         </div>
 <form action="{{ route('pagos.store', $renta) }}" method="POST" class="mt-3">
     @csrf
-
+<input type="hidden" name="renta_id" value="{{ $renta->id }}">
     <div class="mb-2">
         <label for="monto" class="form-label">Abonar monto ($)</label>
         <input type="number" name="monto" id="monto" class="form-control" step="0.01" min="0.01" required max="{{ $renta->saldo }}">
     </div>
 
-    <div class="mb-2">
+<div class="mb-2">
         <label for="metodo_pago" class="form-label">Método de pago</label>
-        <input type="text" name="metodo_pago" id="metodo_pago" class="form-control" required>
-    </div>
-
-    <div class="mb-2">
-        <label for="descripcion" class="form-label">Descripción (opcional)</label>
-        <input type="text" name="descripcion" id="descripcion" class="form-control">
-    </div>
-
+        <select name="metodo_pago" id="metodo_pago" class="form-select" required>
+            <option value="">Seleccionar...</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="transferencia">Transferencia</option>
+            <option value="tarjeta">Tarjeta</option>
+            <option value="otro">Otro</option>
+        </select>
+</div>
     <div class="mb-2">
         <label for="recibido_por" class="form-label">Recibido por</label>
         <input type="text" name="recibido_por" id="recibido_por" class="form-control" required>
+    </div>
+    <div class="mb-2">
+        <label for="descripcion" class="form-label">Descripción (opcional)</label>
+        <input type="text" name="descripcion" id="descripcion" class="form-control">
     </div>
 
     <button type="submit" class="btn btn-success">Registrar Abono</button>

@@ -38,6 +38,8 @@ Route::resource('productos', ProductoController::class)->names([
     'destroy' => 'productos.eliminar',
 ]);
 
+Route::get('/rentas/eventos', [RentaController::class, 'eventos'])->name('rentas.eventos');
+
 // Clientes
 Route::resource('clientes', ClienteController::class)->names([
     'index'   => 'clientes.index',

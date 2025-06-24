@@ -51,6 +51,7 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.min.js"></script>
+<script src="{{ asset('js/calendario.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
@@ -64,7 +65,10 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         events: {
             url: '{{ route("calendario.eventos") }}',
-            method: 'GET'
+            method: 'GET',
+            extraParams: {
+                ocultarDevueltos: true
+            }
         },
         eventClick: function(info) {
             window.location.href = '/rentas/' + info.event.extendedProps.renta_id;

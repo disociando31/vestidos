@@ -64,11 +64,11 @@ class PagoController extends Controller
                 'descripcion' => $validado['descripcion'] ?? null,
                 'recibido_por' => $validado['recibido_por']
             ]);
-
+            
             $renta->increment('monto_pagado', $validado['monto']);
             $renta->actualizarEstado();
         });
-
+        $renta->refresh();
         return back()->with('exito', 'Abono registrado correctamente.');
     }
 }
