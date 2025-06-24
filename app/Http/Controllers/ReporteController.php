@@ -10,7 +10,7 @@ class ReporteController extends Controller
     public function diario()
     {
         $hoy = now()->toDateString();
-        $rentas = Renta::whereDate('fecha_renta', $hoy)->get();
+        $rentas = Renta::with(['cliente', 'items.producto'])->whereDate('fecha_renta', $hoy)->get();
         return view('reportes.diario', compact('rentas', 'hoy'));
     }
 
@@ -18,7 +18,7 @@ class ReporteController extends Controller
     {
         $inicio = now()->startOfWeek();
         $fin = now()->endOfWeek();
-        $rentas = Renta::whereBetween('fecha_renta', [$inicio, $fin])->get();
+        $rentas = Renta::with(['cliente', 'items.producto'])->whereBetween('fecha_renta', [$inicio, $fin])->get();
         return view('reportes.semanal', compact('rentas', 'inicio', 'fin'));
     }
 
@@ -26,7 +26,7 @@ class ReporteController extends Controller
     {
         $inicio = now()->startOfMonth();
         $fin = now()->endOfMonth();
-        $rentas = Renta::whereBetween('fecha_renta', [$inicio, $fin])->get();
+        $rentas = Renta::with(['cliente', 'items.producto'])->whereBetween('fecha_renta', [$inicio, $fin])->get();
         return view('reportes.mensual', compact('rentas', 'inicio', 'fin'));
     }
 }

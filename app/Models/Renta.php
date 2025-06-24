@@ -30,7 +30,7 @@ class Renta extends Model
     }
     public function productos()
     {
-        return $this->belongsToMany(Producto::class, 'detalle_rentas'); // Ajusta si usas otro nombre de tabla pivot
+        return $this->belongsToMany(Producto::class, 'item_rentas'); // Ajusta si usas otro nombre de tabla pivot
     }
     public function items(): HasMany
     {

@@ -43,16 +43,14 @@ class PagoController extends Controller
     public function store(Request $request, Renta $renta)
     {
         $validator = Validator::make($request->all(), [
-            'cantidad' => 'required|numeric|min:1|max:' . ($renta->monto_total - $renta->monto_pagado),
-            'metodo_pago' => 'required|string',
-            'notas' => 'nullable|string',
+            'monto' => 'required|numeric|min:0.01|max:' . ($renta->saldo),
+            'metodo_pago' => 'required|string|max:100',
+            'descripcion' => 'nullable|string|max:255',
             'recibido_por' => 'required|string|max:100'
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
+            return redirect()->back()->withErrors($validator)->withInput();
         }
 
         $validado = $validator->validated();
@@ -60,22 +58,17 @@ class PagoController extends Controller
         DB::transaction(function () use ($validado, $renta) {
             Pago::create([
                 'renta_id' => $renta->id,
-                'monto' => $validado['cantidad'],
+                'monto' => $validado['monto'],
                 'metodo_pago' => $validado['metodo_pago'],
-                'notas' => $validado['notas'] ?? null,
+                'fecha_pago' => now(),
+                'descripcion' => $validado['descripcion'] ?? null,
                 'recibido_por' => $validado['recibido_por']
             ]);
 
-            $renta->increment('monto_pagado', $validado['cantidad']);
-
-            if ($renta->monto_pagado >= $renta->monto_total) {
-                $renta->estado = 'pagado';
-            } else {
-                $renta->estado = 'abonado';
-            }
-            $renta->save();
+            $renta->increment('monto_pagado', $validado['monto']);
+            $renta->actualizarEstado();
         });
 
-        return redirect()->route('calendario.index')->with('exito', 'Pago registrado exitosamente.');
+        return back()->with('exito', 'Abono registrado correctamente.');
     }
 }

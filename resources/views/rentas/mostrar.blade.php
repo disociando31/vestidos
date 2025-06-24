@@ -5,165 +5,151 @@
 @section('content')
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Renta #{{ $renta->id }}</h5>
-        <span class="badge bg-{{ 
-            $renta->estado == 'pendiente' ? 'secondary' : 
-            ($renta->estado == 'parcial' ? 'warning' : 
-            ($renta->estado == 'pagado' ? 'success' : 
-            ($renta->estado == 'devuelto' ? 'info' : 'danger'))) 
-        }}">
-            {{ ucfirst($renta->estado) }}
-        </span>
+        <h5 class="mb-0">Detalle de Renta #{{ $renta->id }}</h5>
+        <div>
+            <a href="{{ route('rentas.index') }}" class="btn btn-secondary btn-sm">Volver al listado</a>
+            <a href="{{ route('facturas.mostrar', $renta) }}" target="_blank" class="btn btn-outline-primary btn-sm ms-2">
+                <i class="fas fa-print"></i> Imprimir Factura
+            </a>
+        </div>
     </div>
 
     <div class="card-body">
-        <div class="row mb-4">
-            <div class="col-md-6">
-                <p><strong>Cliente:</strong> {{ $renta->cliente->nombre }}</p>
-                <p><strong>Teléfono:</strong> {{ $renta->cliente->telefono }}</p>
-                <p><strong>Fecha Renta:</strong> {{ $renta->fecha_renta->format('d/m/Y') }}</p>
-                <p><strong>Fecha Devolución:</strong> {{ $renta->fecha_devolucion->format('d/m/Y') }}</p>
-            </div>
-            <div class="col-md-6">
-                <p><strong>Atendió:</strong> {{ $renta->recibido_por }}</p>
-                <p><strong>Total:</strong> ${{ number_format($renta->monto_total, 2) }}</p>
-                <p><strong>Saldo:</strong> ${{ number_format($renta->saldo, 2) }}</p>
-            </div>
-        </div>
+        <h6>Cliente:</h6>
+        <p><strong>{{ $renta->cliente->nombre }}</strong> ({{ $renta->cliente->telefono }})</p>
 
-        <h5 class="mb-3">Productos Rentados</h5>
-        <div class="table-responsive mb-4">
-            <table class="table table-bordered align-middle">
+        <h6>Fechas:</h6>
+        <p>
+            <strong>Desde:</strong> {{ \Carbon\Carbon::parse($renta->fecha_renta)->format('d/m/Y') }} <br>
+            <strong>Hasta:</strong> {{ \Carbon\Carbon::parse($renta->fecha_devolucion)->format('d/m/Y') }}
+        </p>
+
+        <h6>Notas:</h6>
+        <p>{{ $renta->notas ?? 'Sin notas adicionales.' }}</p>
+
+        <h6>Estado:</h6>
+        <p>
+            <span class="badge 
+                @if($renta->estado == 'pendiente') bg-warning 
+                @elseif($renta->estado == 'pagado') bg-success 
+                @elseif($renta->estado == 'devuelto') bg-primary 
+                @endif
+            ">
+                {{ ucfirst($renta->estado) }}
+            </span>
+        </p>
+
+        <h6>Productos Rentados:</h6>
+        <div class="table-responsive">
+            <table class="table table-bordered">
                 <thead class="table-light">
                     <tr>
                         <th>Producto</th>
-                        <th>Atributos</th>
-                        <th>Precio Unitario</th>
                         <th>Cantidad</th>
-                        <th>Subtotal</th>
-                        <th>IVA</th>
+                        <th>Precio Unitario</th>
                         <th>Total</th>
+                        <th>Atributos</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($renta->items as $item)
-                    <tr>
-                        <td>{{ $item->producto->nombre }}</td>
-                        <td>
-                            @foreach($item->atributos as $nombre => $valor)
-                                <span class="badge bg-light text-dark">{{ $nombre }}: {{ $valor }}</span>
-                            @endforeach
-                        </td>
-                        <td>${{ number_format($item->precio_unitario, 2) }}</td>
-                        <td>{{ $item->cantidad }}</td>
-                        <td>${{ number_format($item->subtotal, 2) }}</td>
-                        <td>${{ number_format($item->iva, 2) }}</td>
-                        <td>${{ number_format($item->total, 2) }}</td>
-                    </tr>
+                        <tr>
+                            <td>
+                                {{ $item->producto->nombre }}
+                                @if($item->producto->imagenPrincipal)
+                                    <br>
+                                    <img src="{{ asset('storage/' . $item->producto->imagenPrincipal->ruta) }}" alt="{{ $item->producto->nombre }}" class="img-thumbnail mt-1" style="max-width: 100px;">
+                                @endif
+                            </td>
+                            <td>{{ $item->cantidad }}</td>
+                            <td>${{ number_format($item->precio_unitario, 2) }}</td>
+                            <td>${{ number_format($item->total, 2) }}</td>
+                            <td>
+                                @php
+                                    $atributos = is_string($item->atributos) ? json_decode($item->atributos, true) : [];
+                                @endphp
+                                @if(!empty($atributos))
+                                    <ul class="mb-0">
+                                        @foreach($atributos as $nombre => $valor)
+                                            <li><strong>{{ $nombre }}:</strong> {{ $valor }}</li>
+                                        @endforeach
+                                    </ul>
+                                @else
+                                    <span class="text-muted">Sin atributos</span>
+                                @endif
+                            </td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
+<form action="{{ route('pagos.store', $renta) }}" method="POST" class="mt-3">
+    @csrf
 
-        @if($renta->estado != 'devuelto')
-        <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="mb-0">Registrar Pago</h6>
-            </div>
-            <div class="card-body">
-                @if ($errors->any())
-                    <div class="alert alert-danger">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+    <div class="mb-2">
+        <label for="monto" class="form-label">Abonar monto ($)</label>
+        <input type="number" name="monto" id="monto" class="form-control" step="0.01" min="0.01" required max="{{ $renta->saldo }}">
+    </div>
 
-                <form action="{{ route('pagos.store', $renta) }}" method="POST">
-                    @csrf
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label" for="cantidad">Cantidad</label>
-                            <input type="number" name="cantidad" id="cantidad" min="0.01" step="0.01"
-                                max="{{ $renta->saldo }}" value="{{ old('cantidad') }}"
-                                class="form-control @error('cantidad') is-invalid @enderror" required>
-                            @error('cantidad')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+    <div class="mb-2">
+        <label for="metodo_pago" class="form-label">Método de pago</label>
+        <input type="text" name="metodo_pago" id="metodo_pago" class="form-control" required>
+    </div>
 
-                        <div class="col-md-3">
-                            <label class="form-label" for="metodo_pago">Método de Pago</label>
-                            <select name="metodo_pago" id="metodo_pago" class="form-select @error('metodo_pago') is-invalid @enderror" required>
-                                <option value="" disabled selected>Selecciona un método</option>
-                                <option value="efectivo" {{ old('metodo_pago') == 'efectivo' ? 'selected' : '' }}>Efectivo</option>
-                                <option value="tarjeta" {{ old('metodo_pago') == 'tarjeta' ? 'selected' : '' }}>Tarjeta</option>
-                                <option value="transferencia" {{ old('metodo_pago') == 'transferencia' ? 'selected' : '' }}>Transferencia</option>
-                            </select>
-                            @error('metodo_pago')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+    <div class="mb-2">
+        <label for="descripcion" class="form-label">Descripción (opcional)</label>
+        <input type="text" name="descripcion" id="descripcion" class="form-control">
+    </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label" for="recibido_por">Recibido por</label>
-                            <input type="text" name="recibido_por" id="recibido_por" value="{{ old('recibido_por') }}"
-                                class="form-control @error('recibido_por') is-invalid @enderror" required>
-                            @error('recibido_por')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+    <div class="mb-2">
+        <label for="recibido_por" class="form-label">Recibido por</label>
+        <input type="text" name="recibido_por" id="recibido_por" class="form-control" required>
+    </div>
 
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100">Registrar</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-        @endif
+    <button type="submit" class="btn btn-success">Registrar Abono</button>
+</form>
 
-        @if($renta->pagos->count() > 0)
-        <h5 class="mb-3">Historial de Pagos</h5>
+
+        <h6 class="mt-4">Pagos:</h6>
         <div class="table-responsive">
-            <table class="table table-bordered align-middle">
+            <table class="table table-striped">
                 <thead class="table-light">
                     <tr>
                         <th>Fecha</th>
                         <th>Método</th>
-                        <th>Cantidad</th>
-                        <th>Recibió</th>
+                        <th>Monto</th>
+                        <th>Recibido Por</th>
+                        <th>Notas</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($renta->pagos as $pago)
-                    <tr>
-                        <td>{{ $pago->created_at->format('d/m/Y H:i') }}</td>
-                        <td>{{ ucfirst($pago->metodo_pago) }}</td>
-                        <td>${{ number_format($pago->monto, 2) }}</td>
-                        <td>{{ $pago->recibido_por }}</td>
-                    </tr>
+                        <tr>
+                            <td>{{ $pago->created_at->format('d/m/Y H:i') }}</td>
+                            <td>{{ ucfirst($pago->metodo_pago) }}</td>
+                            <td>${{ number_format($pago->monto, 2) }}</td>
+                            <td>{{ $pago->recibido_por }}</td>
+                            <td>{{ $pago->notas ?? '-' }}</td>
+                        </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
+
+        <h6 class="mt-3">Resumen de Pagos:</h6>
+        <p>
+            <strong>Total:</strong> ${{ number_format($renta->monto_total, 2) }} <br>
+            <strong>Pagado:</strong> ${{ number_format($renta->monto_pagado, 2) }} <br>
+            <strong>Pendiente:</strong> ${{ number_format($renta->monto_total - $renta->monto_pagado, 2) }}
+        </p>
+
+        @if($renta->estado !== 'devuelto')
+            <form action="{{ route('rentas.devolver', $renta) }}" method="POST" onsubmit="return confirm('¿Confirmar devolución de productos?');">
+                @csrf
+                @method('POST')
+                <button type="submit" class="btn btn-primary">Registrar Devolución</button>
+            </form>
         @endif
-
-<div class="mt-4 d-flex gap-2">
-    <a href="{{ route('facturas.mostrar', $renta) }}" class="btn btn-info" target="_blank">
-        Generar Factura PDF
-    </a>
-
-    @if($renta->estado != 'devuelto')
-        <form action="{{ route('rentas.devolver', $renta) }}" method="POST" onsubmit="return confirm('¿Estás seguro de marcar esta renta como devuelta?')" class="d-inline">
-            @csrf
-            <button type="submit" class="btn btn-warning">Marcar como Devuelta</button>
-        </form>
-    @endif
-
-    <a href="{{ route('rentas.index') }}" class="btn btn-secondary">Volver</a>
+    </div>
 </div>
-
 @endsection

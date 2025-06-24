@@ -9,8 +9,18 @@ class FacturaController extends Controller
 {
     protected function generarPDF(Renta $renta)
     {
+        // Carga relaciones necesarias
         $renta->load(['cliente', 'items.producto', 'pagos']);
-        return Pdf::loadView('facturas.mostrar', compact('renta'));
+
+        // Generar colección de productos desde los items
+        $productos = $renta->items->map(function ($item) {
+            return $item->producto;
+        });
+
+        return Pdf::loadView('facturas.mostrar', [
+            'renta'     => $renta,
+            'productos' => $productos, // ← Aquí enviamos los productos ya listos
+        ]);
     }
 
     public function mostrar(Renta $renta)

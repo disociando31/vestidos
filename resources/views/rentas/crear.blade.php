@@ -43,10 +43,10 @@
 
             <button type="button" id="agregar-producto" class="btn btn-secondary mb-3">Agregar Producto</button>
 
-            <div class="mb-3">
-                <label class="form-label">Notas</label>
-                <textarea name="notas" class="form-control" rows="2"></textarea>
-            </div>
+<div class="mb-3">
+    <label for="abono_inicial" class="form-label">Abono inicial ($)</label>
+    <input type="number" name="abono_inicial" id="abono_inicial" class="form-control" min="0" step="0.01" value="0">
+</div>
 
             <button type="submit" class="btn btn-primary">Guardar Renta</button>
         </form>

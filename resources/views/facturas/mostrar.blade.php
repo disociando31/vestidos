@@ -46,23 +46,24 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($renta->items as $item)
-                <tr>
-                    <td>
-                        {{ $item->producto->nombre }}
-                        @if($item->atributos)
-                            <br><small>
-                            @foreach($item->atributos as $nombre => $valor)
-                                {{ $nombre }}: {{ $valor }}{{ !$loop->last ? ', ' : '' }}
-                            @endforeach
-                            </small>
-                        @endif
-                    </td>
-                    <td>{{ $item->cantidad }}</td>
-                    <td>${{ number_format($item->precio_unitario, 2) }}</td>
-                    <td class="right">${{ number_format($item->total, 2) }}</td>
-                </tr>
-                @endforeach
+@foreach($renta->items as $item)
+<tr>
+    <td>
+        {{ $item->producto->nombre }}
+        @if(is_array($item->atributos))
+            <br><small>
+            @foreach($item->atributos as $nombre => $valor)
+                {{ $nombre }}: {{ $valor }}{{ !$loop->last ? ', ' : '' }}
+            @endforeach
+            </small>
+        @endif
+    </td>
+    <td>{{ $item->cantidad }}</td>
+    <td>${{ number_format($item->precio_unitario, 2) }}</td>
+    <td class="right">${{ number_format($item->total, 2) }}</td>
+</tr>
+@endforeach
+
             </tbody>
         </table>
 
@@ -101,19 +102,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($renta->items as $item)
-                    <tr>
-                        <td>{{ $item->producto->nombre }}</td>
-                        <td>
-                            @foreach($item->atributos as $nombre => $valor)
-                                {{ $nombre }}: {{ $valor }}{{ !$loop->last ? ', ' : '' }}
-                            @endforeach
-                        </td>
-                        <td>{{ $item->cantidad }}</td>
-                        <td>${{ number_format($item->precio_unitario, 2) }}</td>
-                        <td>${{ number_format($item->total, 2) }}</td>
-                    </tr>
-                    @endforeach
+@foreach($renta->items as $item)
+<tr>
+    <td>
+        {{ $item->producto->nombre }}
+        @if(is_array($item->atributos))
+            <br><small>
+            @foreach($item->atributos as $nombre => $valor)
+                {{ $nombre }}: {{ $valor }}{{ !$loop->last ? ', ' : '' }}
+            @endforeach
+            </small>
+        @endif
+    </td>
+    <td>{{ $item->cantidad }}</td>
+    <td>${{ number_format($item->precio_unitario, 2) }}</td>
+    <td class="right">${{ number_format($item->total, 2) }}</td>
+</tr>
+@endforeach
+
                 </tbody>
             </table>
 

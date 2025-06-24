@@ -26,10 +26,14 @@ class Producto extends Model
         return $this->hasMany(ImagenProducto::class);
     }
 
+    public function itemsRenta(): HasMany
+    {
+        return $this->hasMany(ItemRenta::class);
+    }
+
     public function getImagenPrincipalAttribute()
     {
-        return $this->imagenes()->where('es_principal', true)->first() 
-            ?? $this->imagenes->first();
+        return $this->imagenes()->where('es_principal', true)->first() ?? $this->imagenes->first();
     }
 
     public function scopeDisponibles($query)
@@ -37,8 +41,31 @@ class Producto extends Model
         return $query->where('estado', 'disponible');
     }
 
-    public function itemsRenta(): HasMany
+    public function scopeRentados($query)
     {
-        return $this->hasMany(ItemRenta::class);
+        return $query->where('estado', 'rentado');
+    }
+
+    public function scopeEnMantenimiento($query)
+    {
+        return $query->where('estado', 'mantenimiento');
+    }
+
+    /**
+     * ✅ Método para marcar el producto como rentado
+     */
+    public function marcarComoRentado()
+    {
+        $this->estado = 'rentado';
+        $this->save();
+    }
+
+    /**
+     * ✅ Método para marcar el producto como disponible
+     */
+    public function marcarComoDisponible()
+    {
+        $this->estado = 'disponible';
+        $this->save();
     }
 }
