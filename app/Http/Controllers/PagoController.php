@@ -9,6 +9,39 @@ use Illuminate\Support\Facades\DB;
 
 class PagoController extends Controller
 {
+    public function index(Request $request)
+{
+    $pagos = Pago::with(['renta.cliente'])
+        ->orderByDesc('created_at')
+        ->paginate(15);
+
+    return view('pagos.index', compact('pagos'));
+}
+public function reporte(Request $request)
+{
+    $query = Pago::with(['renta.cliente']);
+
+    if ($request->filled('fecha_inicio')) {
+        $query->whereDate('created_at', '>=', $request->fecha_inicio);
+    }
+
+    if ($request->filled('fecha_fin')) {
+        $query->whereDate('created_at', '<=', $request->fecha_fin);
+    }
+
+    $pagos = $query->orderByDesc('created_at')->paginate(15);
+
+    $totalPagos = $query->sum('monto');
+
+    return view('pagos.reporte', compact('pagos', 'totalPagos'));
+}
+
+
+public function show(Pago $pago)
+{
+    $pago->load('cliente');
+    return view('pagos.show', compact('pago'));
+}
     public function store(Request $request, Renta $renta)
     {
         $validado = $request->validate([

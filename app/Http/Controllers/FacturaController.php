@@ -3,36 +3,23 @@
 namespace App\Http\Controllers;
 
 use App\Models\Renta;
-use Barryvdh\DomPDF\Facade\Pdf; // Importación correcta del facade
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class FacturaController extends Controller
 {
+    protected function generarPDF(Renta $renta)
+    {
+        $renta->load(['cliente', 'items.producto', 'pagos']);
+        return Pdf::loadView('facturas.mostrar', compact('renta'));
+    }
+
     public function mostrar(Renta $renta)
     {
-        $renta->load(['cliente', 'items.producto', 'pagos']); // Corregido 'pages' a 'pagos'
-        
-        $pdf = Pdf::loadView('facturas.mostrar', compact('renta'));
-        
-        return $pdf->stream("factura-{$renta->id}.pdf"); // Corregida la interpolación y comillas
+        return $this->generarPDF($renta)->stream("factura-{$renta->id}.pdf");
     }
 
     public function descargar(Renta $renta)
     {
-        $renta->load(['cliente', 'items.producto', 'pagos']); // Corregido 'pages' a 'pagos'
-        
-        $pdf = Pdf::loadView('facturas.mostrar', compact('renta'));
-        
-        return $pdf->download("factura-{$renta->id}.pdf"); // Corregida la interpolación y comillas
+        return $this->generarPDF($renta)->download("factura-{$renta->id}.pdf");
     }
-
-    
-    public function imprimir(Renta $renta)
-    {
-        $renta->load(['cliente', 'items.producto', 'pagos']); // Corregido 'pages' a 'pagos'
-        
-        $pdf = Pdf::loadView('facturas.mostrar', compact('renta'));
-        
-        return $pdf->stream("factura-{$renta->id}.pdf"); // Corregida la interpolación y comillas
-    }
-
 }

@@ -25,11 +25,20 @@ class CalendarioController extends Controller
         $eventos = [];
         
         foreach ($rentas as $renta) {
+            $color = match ($renta->estado) {
+                'pendiente' => '#6c757d', // gris
+                'parcial'   => '#ffc107', // amarillo
+                'pagado'    => '#28a745', // verde
+                'devuelto'  => '#0dcaf0', // azul claro
+                'atrasado'  => '#dc3545', // rojo
+                default     => '#007bff'  // azul por defecto
+            };
+
             $eventos[] = [
                 'title' => $renta->cliente->nombre . ' - ' . $renta->items->first()->producto->nombre,
                 'start' => $renta->fecha_renta->format('Y-m-d'),
                 'end' => $renta->fecha_devolucion->modify('+1 day')->format('Y-m-d'),
-                'color' => $renta->estado === 'atrasado' ? '#dc3545' :  ($renta->estado === 'devuelto' ? '#28a745' : '#007bff'),
+                'color' => $color,
                 'extendedProps' => [
                     'renta_id' => $renta->id,
                     'cliente' => $renta->cliente->nombre,
