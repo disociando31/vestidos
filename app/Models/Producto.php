@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Producto extends Model
 {
@@ -26,14 +27,15 @@ class Producto extends Model
         return $this->hasMany(ImagenProducto::class);
     }
 
+    // ✅ Nueva relación válida para eager loading
+    public function imagenPrincipal(): HasOne
+    {
+        return $this->hasOne(ImagenProducto::class)->where('es_principal', true);
+    }
+
     public function itemsRenta(): HasMany
     {
         return $this->hasMany(ItemRenta::class);
-    }
-
-    public function getImagenPrincipalAttribute()
-    {
-        return $this->imagenes()->where('es_principal', true)->first() ?? $this->imagenes->first();
     }
 
     public function scopeDisponibles($query)
@@ -51,18 +53,12 @@ class Producto extends Model
         return $query->where('estado', 'mantenimiento');
     }
 
-    /**
-     * ✅ Método para marcar el producto como rentado
-     */
     public function marcarComoRentado()
     {
         $this->estado = 'rentado';
         $this->save();
     }
 
-    /**
-     * ✅ Método para marcar el producto como disponible
-     */
     public function marcarComoDisponible()
     {
         $this->estado = 'disponible';

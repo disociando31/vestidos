@@ -14,14 +14,20 @@ class ProductoController extends Controller
 {
     use ValidatesRequests;
 
-    public function index()
+    public function index(Request $request)
     {
-        $productos = Producto::with(['atributos', 'imagenes'])
-            ->orderBy('tipo')
-            ->orderBy('nombre')
-            ->paginate(20);
+    $query = Producto::with(['atributos', 'imagenes']);
 
-        return view('productos.index', compact('productos'));
+    if ($request->filled('buscar')) {
+        $query->where('nombre', 'like', '%' . $request->buscar . '%')
+              ->orWhere('codigo', 'like', '%' . $request->buscar . '%');
+    }
+
+    $productos = $query->orderBy('tipo')
+                       ->orderBy('nombre')
+                       ->paginate(20);
+
+    return view('productos.index', compact('productos'));
     }
 
     public function create()
@@ -37,7 +43,7 @@ class ProductoController extends Controller
 }
 
 public function store(Request $request)
-{
+{ 
     $validator = Validator::make($request->all(), [
         'tipo' => 'required|in:traje,vestido,vestido_15',
         'nombre' => 'required|string|max:255',

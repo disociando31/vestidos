@@ -76,7 +76,7 @@ $(function () {
                             data-precio="{{ $producto->precio_renta }}"
                             data-img="{{ optional($producto->imagenPrincipal)->ruta }}"
                             data-nombre="{{ $producto->nombre }}"
-                            {{ $producto->estado != 'disponible' ? 'disabled' : '' }}>
+                            @if($producto->estado !== 'disponible') disabled @endif>
                             {{ $producto->nombre }} - ${{ number_format($producto->precio_renta, 2) }}
                         </option>
                         @endforeach

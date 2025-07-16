@@ -8,10 +8,19 @@ use Illuminate\Support\Facades\Validator;
 
 class ClienteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $clientes = Cliente::orderBy('nombre')->paginate(20);
-        return view('clientes.index', compact('clientes'));
+    $query = Cliente::query();
+
+    if ($request->filled('buscar')) {
+        $query->where('nombre', 'like', '%' . $request->buscar . '%')
+              ->orWhere('telefono', 'like', '%' . $request->buscar . '%')
+              ->orWhere('email', 'like', '%' . $request->buscar . '%');
+    }
+
+    $clientes = $query->orderBy('nombre')->paginate(20);
+
+    return view('clientes.index', compact('clientes'));
     }
 
     public function create()

@@ -9,6 +9,9 @@
         <a href="{{ route('productos.crear') }}" class="btn btn-primary">Nuevo Producto</a>
     </div>
     <div class="card-body">
+        <form method="GET" class="mb-3">
+            <input type="text" name="busqueda" class="form-control" placeholder="Buscar por nombre o tipo..." value="{{ request('busqueda') }}">
+        </form>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -41,7 +44,7 @@
                 </tbody>
             </table>
         </div>
-        {{ $productos->links() }}
+        {{ $productos->withQueryString()->links() }}
     </div>
 </div>
 @endsection

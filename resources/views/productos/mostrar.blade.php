@@ -12,6 +12,7 @@
     </div>
     <div class="card-body">
         <div class="row">
+            <!-- Información del producto -->
             <div class="col-md-6">
                 <p><strong>Código:</strong> {{ $producto->codigo }}</p>
                 <p><strong>Tipo:</strong> {{ ucfirst($producto->tipo) }}</p>
@@ -27,13 +28,14 @@
                 <p><strong>Descripción:</strong></p>
                 <p>{{ $producto->descripcion }}</p>
             </div>
-            
+
+            <!-- Imágenes -->
             <div class="col-md-6">
                 <h5>Imágenes</h5>
                 <div class="row">
                     @forelse($producto->imagenes as $imagen)
                     <div class="col-md-6 mb-3">
-                        <img src="{{ asset('storage/' . $imagen->ruta) }}" class="img-fluid img-thumbnail">
+                        <img src="{{ asset('storage/' . $imagen->ruta) }}" alt="Imagen del producto" class="img-fluid rounded border" style="max-height: 200px; object-fit: cover;">
                     </div>
                     @empty
                     <div class="col-12">

@@ -13,19 +13,37 @@ use Illuminate\Support\Facades\Validator;
 
 class RentaController extends Controller
 {
-    public function index()
+public function index(Request $request)
     {
-        $rentas = Renta::with(['cliente', 'items.producto'])
-            ->orderBy('fecha_renta', 'desc')
-            ->paginate(20);
+    $query = Renta::with(['cliente', 'items.producto']);
 
-        return view('rentas.index', compact('rentas'));
+    if ($request->filled('cliente')) {
+        $query->whereHas('cliente', function ($q) use ($request) {
+            $q->where('nombre', 'like', '%' . $request->cliente . '%');
+        });
     }
 
+    if ($request->filled('fecha')) {
+        $query->whereDate('fecha_renta', $request->fecha);
+    }
+
+    if ($request->filled('producto')) {
+        $query->whereHas('items.producto', function ($q) use ($request) {
+            $q->where('nombre', 'like', '%' . $request->producto . '%');
+        });
+    }
+
+    $rentas = $query->orderBy('fecha_renta', 'desc')->paginate(20);
+
+    return view('rentas.index', compact('rentas'));
+    }
+    
     public function create()
     {
         $clientes = Cliente::orderBy('nombre')->get();
-        $productos = Producto::disponibles()->with(['atributos', 'imagenes'])->get();
+        $productos = Producto::where('estado','disponible')
+        ->with('imagenPrincipal')
+        ->get(); 
 
         return view('rentas.crear', compact('clientes', 'productos'));
     }

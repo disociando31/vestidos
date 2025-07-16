@@ -10,6 +10,21 @@
     </div>
 
     <div class="card-body">
+        <form method="GET" class="row mb-3 g-2">
+            <div class="col-md-3">
+                <input type="text" name="cliente" class="form-control" placeholder="Cliente..." value="{{ request('cliente') }}">
+            </div>
+            <div class="col-md-3">
+                <input type="date" name="fecha" class="form-control" value="{{ request('fecha') }}">
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="producto" class="form-control" placeholder="Nombre del producto..." value="{{ request('producto') }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-secondary w-100">Filtrar</button>
+            </div>
+        </form>
+
         <div class="table-responsive">
             <table class="table table-striped align-middle">
                 <thead class="table-light">
@@ -58,7 +73,7 @@
         </div>
 
         <div class="mt-3">
-            {{ $rentas->links() }}
+            {{ $rentas->withQueryString()->links() }}
         </div>
     </div>
 </div>
