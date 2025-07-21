@@ -16,16 +16,17 @@ class ProductoController extends Controller
 
     public function index(Request $request)
     {
-    $query = Producto::with(['atributos', 'imagenes']);
-
-    if ($request->filled('buscar')) {
-        $query->where('nombre', 'like', '%' . $request->buscar . '%')
-              ->orWhere('codigo', 'like', '%' . $request->buscar . '%');
-    }
-
-    $productos = $query->orderBy('tipo')
-                       ->orderBy('nombre')
-                       ->paginate(20);
+    $productos = Producto::with(['atributos', 'imagenes'])
+        ->when($request->filled('buscar'), function ($query) use ($request) {
+            $buscar = $request->buscar;
+            $query->where(function ($q) use ($buscar) {
+                $q->where('nombre', 'like', "%{$buscar}%")
+                  ->orWhere('codigo', 'like', "%{$buscar}%");
+            });
+        })
+        ->orderBy('tipo')
+        ->orderBy('nombre')
+        ->paginate(20);
 
     return view('productos.index', compact('productos'));
     }

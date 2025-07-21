@@ -10,15 +10,16 @@ class ClienteController extends Controller
 {
     public function index(Request $request)
     {
-    $query = Cliente::query();
-
-    if ($request->filled('buscar')) {
-        $query->where('nombre', 'like', '%' . $request->buscar . '%')
-              ->orWhere('telefono', 'like', '%' . $request->buscar . '%')
-              ->orWhere('email', 'like', '%' . $request->buscar . '%');
-    }
-
-    $clientes = $query->orderBy('nombre')->paginate(20);
+    $clientes = Cliente::when($request->filled('buscar'), function ($query) use ($request) {
+            $buscar = $request->buscar;
+            $query->where(function ($q) use ($buscar) {
+                $q->where('nombre', 'like', "%{$buscar}%")
+                  ->orWhere('telefono', 'like', "%{$buscar}%")
+                  ->orWhere('email', 'like', "%{$buscar}%");
+            });
+        })
+        ->orderBy('nombre')
+        ->paginate(20);
 
     return view('clientes.index', compact('clientes'));
     }

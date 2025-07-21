@@ -9,9 +9,13 @@
         <a href="{{ route('productos.crear') }}" class="btn btn-primary">Nuevo Producto</a>
     </div>
     <div class="card-body">
-        <form method="GET" class="mb-3">
-            <input type="text" name="busqueda" class="form-control" placeholder="Buscar por nombre o tipo..." value="{{ request('busqueda') }}">
+        <form method="GET" action="{{ route('productos.index') }}" class="mb-3">
+            <div class="input-group">
+                <input type="text" name="buscar" class="form-control" placeholder="Buscar producto..." value="{{ request('buscar') }}">
+                <button class="btn btn-primary" type="submit">Buscar</button>
+            </div>
         </form>
+
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -25,7 +29,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($productos as $producto)
+                    @forelse($productos as $producto)
                     <tr>
                         <td>{{ $producto->codigo }}</td>
                         <td>{{ $producto->nombre }}</td>
@@ -40,11 +44,15 @@
                             <a href="{{ route('productos.mostrar', $producto) }}" class="btn btn-sm btn-info">Ver</a>
                         </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No se encontraron productos</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
-        {{ $productos->withQueryString()->links() }}
+        {{ $productos->appends(request()->query())->links() }}
     </div>
 </div>
 @endsection

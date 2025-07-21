@@ -9,9 +9,13 @@
         <a href="{{ route('clientes.crear') }}" class="btn btn-primary">Nuevo Cliente</a>
     </div>
     <div class="card-body">
-        <form method="GET" class="mb-3">
-            <input type="text" name="busqueda" class="form-control" placeholder="Buscar por nombre, teléfono o email..." value="{{ request('busqueda') }}">
+        <form method="GET" action="{{ route('clientes.index') }}" class="mb-3">
+            <div class="input-group">
+                <input type="text" name="buscar" class="form-control" placeholder="Buscar cliente..." value="{{ request('buscar') }}">
+                <button class="btn btn-primary" type="submit">Buscar</button>
+            </div>
         </form>
+
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -25,7 +29,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($clientes as $cliente)
+                    @forelse($clientes as $cliente)
                     <tr>
                         <td>{{ $cliente->nombre }}</td>
                         <td>{{ $cliente->telefono }}</td>
@@ -36,11 +40,15 @@
                             <a href="{{ route('clientes.mostrar', $cliente) }}" class="btn btn-sm btn-info">Ver</a>
                         </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No se encontraron clientes</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
-        {{ $clientes->withQueryString()->links() }}
+        {{ $clientes->appends(request()->query())->links() }}
     </div>
 </div>
 @endsection

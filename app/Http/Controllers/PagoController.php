@@ -45,7 +45,7 @@ class PagoController extends Controller
         $validator = Validator::make($request->all(), [
             'monto' => 'required|numeric|min:0.01|max:' . ($renta->saldo),
             'metodo_pago' => 'required|string|max:100',
-            'descripcion' => 'nullable|string|max:255',
+            'notas' => 'nullable|string|max:255',
             'recibido_por' => 'required|string|max:100'
         ]);
 
@@ -61,14 +61,16 @@ class PagoController extends Controller
                 'monto' => $validado['monto'],
                 'metodo_pago' => $validado['metodo_pago'],
                 'fecha_pago' => now(),
-                'descripcion' => $validado['descripcion'] ?? null,
+                'notas' => $validado['notas'] ?? null,
                 'recibido_por' => $validado['recibido_por']
             ]);
             
             $renta->increment('monto_pagado', $validado['monto']);
             $renta->actualizarEstado();
         });
+
         $renta->refresh();
+
         return back()->with('exito', 'Abono registrado correctamente.');
     }
 }
