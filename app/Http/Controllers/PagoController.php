@@ -42,8 +42,14 @@ class PagoController extends Controller
 
     public function store(Request $request, Renta $renta)
     {
+        $saldoPendiente = $renta->saldo;
+
+        if ($saldoPendiente <= 0) {
+            return back()->with('error', 'Total cancelado. No se pueden registrar más pagos.');
+        }
+
         $validator = Validator::make($request->all(), [
-            'monto' => 'required|numeric|min:0.01|max:' . ($renta->saldo),
+            'monto' => 'required|numeric|min:0.01|max:' . $saldoPendiente,
             'metodo_pago' => 'required|string|max:100',
             'notas' => 'nullable|string|max:255',
             'recibido_por' => 'required|string|max:100'
@@ -64,12 +70,10 @@ class PagoController extends Controller
                 'notas' => $validado['notas'] ?? null,
                 'recibido_por' => $validado['recibido_por']
             ]);
-            
+
             $renta->increment('monto_pagado', $validado['monto']);
             $renta->actualizarEstado();
         });
-
-        $renta->refresh();
 
         return back()->with('exito', 'Abono registrado correctamente.');
     }

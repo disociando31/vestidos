@@ -8,6 +8,20 @@
         <h5 class="mb-0">Detalle de Pago #{{ $pago->id }}</h5>
     </div>
     <div class="card-body">
+        
+        {{-- Mensajes de éxito o error --}}
+        @if(session('error'))
+            <div class="alert alert-danger">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if(session('exito'))
+            <div class="alert alert-success">
+                {{ session('exito') }}
+            </div>
+        @endif
+
         <div class="row mb-3">
             <div class="col-md-6">
                 <p><strong>Cliente:</strong> {{ $pago->cliente->nombre ?? 'N/A' }}</p>

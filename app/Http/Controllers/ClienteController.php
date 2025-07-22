@@ -10,18 +10,18 @@ class ClienteController extends Controller
 {
     public function index(Request $request)
     {
-    $clientes = Cliente::when($request->filled('buscar'), function ($query) use ($request) {
+        $clientes = Cliente::when($request->filled('buscar'), function ($query) use ($request) {
             $buscar = $request->buscar;
             $query->where(function ($q) use ($buscar) {
                 $q->where('nombre', 'like', "%{$buscar}%")
-                  ->orWhere('telefono', 'like', "%{$buscar}%")
-                  ->orWhere('email', 'like', "%{$buscar}%");
+                ->orWhere('telefono', 'like', "%{$buscar}%")
+                ->orWhere('email', 'like', "%{$buscar}%");
             });
         })
         ->orderBy('nombre')
         ->paginate(20);
 
-    return view('clientes.index', compact('clientes'));
+        return view('clientes.index', compact('clientes'));
     }
 
     public function create()
@@ -35,26 +35,38 @@ class ClienteController extends Controller
             'nombre' => 'required|string|max:255',
             'email' => 'nullable|email|unique:clientes,email',
             'telefono' => 'required|string|max:20',
+            'telefono2' => 'nullable|string|max:20',
             'direccion' => 'nullable|string',
-            'fecha_registro' => 'nullable|date'
+            'fecha_registro' => 'nullable|date',
+            'fecha_cumpleanos' => 'nullable|date'
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $validated = $validator->validated();
+        $existe = Cliente::where('nombre', $request->nombre)
+                        ->where('telefono', $request->telefono)
+                        ->exists();
+
+        if ($existe) {
+            return redirect()->back()
+                ->withErrors(['telefono' => 'Ya existe un cliente con ese nombre y teléfono.'])
+                ->withInput();
+        }
 
         $cliente = Cliente::create([
-            'nombre' => $validated['nombre'],
-            'email' => $validated['email'] ?? null,
-            'telefono' => $validated['telefono'],
-            'direccion' => $validated['direccion'] ?? null,
-            'fecha_registro' => $validated['fecha_registro'] ?? now()
+            'nombre' => $request->nombre,
+            'email' => $request->email,
+            'telefono' => $request->telefono,
+            'telefono2' => $request->telefono2,
+            'direccion' => $request->direccion,
+            'fecha_registro' => $request->fecha_registro ?? now(),
+            'fecha_cumpleanos' => $request->fecha_cumpleanos
         ]);
 
         return redirect()->route('clientes.mostrar', $cliente)
-            ->with('success', 'Cliente registrado correctamente');
+            ->with('exito', 'Cliente registrado correctamente');
     }
 
     public function show(Cliente $cliente)
@@ -78,8 +90,10 @@ class ClienteController extends Controller
             'nombre' => 'required|string|max:255',
             'email' => 'nullable|email|unique:clientes,email,' . $cliente->id,
             'telefono' => 'required|string|max:20',
+            'telefono2' => 'nullable|string|max:20',
             'direccion' => 'nullable|string',
-            'fecha_registro' => 'nullable|date'
+            'fecha_registro' => 'nullable|date',
+            'fecha_cumpleanos' => 'nullable|date'
         ]);
 
         if ($validator->fails()) {
@@ -89,6 +103,6 @@ class ClienteController extends Controller
         $cliente->update($validator->validated());
 
         return redirect()->route('clientes.show', $cliente)
-            ->with('success', 'Datos del cliente actualizados');
+            ->with('exito', 'Datos del cliente actualizados correctamente');
     }
 }
