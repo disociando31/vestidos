@@ -9,7 +9,8 @@ use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\FacturaController;
 use App\Models\Producto;
 use App\Models\Renta;
-
+use App\Models\Pago;
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -62,6 +63,13 @@ Route::resource('rentas', RentaController::class)->names([
     'destroy' => 'rentas.eliminar',
 ]);
 
+Route::post('/reportes/validar/{tipo}', function(Request $request, $tipo) {
+    if ($request->clave === 'Admin2025') {
+        session(['reporte_autorizado' => true]);
+    }
+    return redirect()->route("reportes.$tipo");
+})->name('reportes.validar');
+
 // Devolución de rentas → POST
 Route::post('/rentas/{renta}/devolver', [RentaController::class, 'devolver'])->name('rentas.devolver');
 
@@ -95,3 +103,4 @@ Route::get('/dashboard', function () {
         'rentasAtrasadas'
     ));
 })->name('dashboard');
+

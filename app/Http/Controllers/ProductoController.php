@@ -21,7 +21,7 @@ class ProductoController extends Controller
             $buscar = $request->buscar;
             $query->where(function ($q) use ($buscar) {
                 $q->where('nombre', 'like', "%{$buscar}%")
-                  ->orWhere('codigo', 'like', "%{$buscar}%");
+                ->orWhere('codigo', 'like', "%{$buscar}%");
             });
         })
         ->orderBy('tipo')

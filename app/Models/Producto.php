@@ -2,66 +2,80 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 class Producto extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'tipo',
         'nombre',
-        'codigo',
         'descripcion',
         'precio_renta',
-        'estado'
+        'estado',
+        'disponible_desde',
     ];
 
-    public function atributos(): HasMany
+    protected $dates = [
+        'disponible_desde',
+    ];
+
+    // Relación con imagen principal (una imagen destacada)
+    public function imagenPrincipal()
     {
-        return $this->hasMany(AtributoProducto::class);
+        return $this->hasOne(ImagenProducto::class)->where('principal', true);
     }
 
-    public function imagenes(): HasMany
+    // Relación con todas las imágenes del producto
+    public function imagenes()
     {
         return $this->hasMany(ImagenProducto::class);
     }
 
-    // ✅ Nueva relación válida para eager loading
-    public function imagenPrincipal(): HasOne
+    // Relación con atributos (adicionales, ej: zapatos, camisas)
+    public function atributos()
     {
-        return $this->hasOne(ImagenProducto::class)->where('es_principal', true);
+        return $this->hasMany(AtributoProducto::class);
     }
 
-    public function itemsRenta(): HasMany
+    // Relación con rentas
+    public function rentas()
     {
-        return $this->hasMany(ItemRenta::class);
+        return $this->belongsToMany(Renta::class, 'item_rentas');
     }
 
-    public function scopeDisponibles($query)
-    {
-        return $query->where('estado', 'disponible');
-    }
-
-    public function scopeRentados($query)
-    {
-        return $query->where('estado', 'rentado');
-    }
-
-    public function scopeEnMantenimiento($query)
-    {
-        return $query->where('estado', 'mantenimiento');
-    }
-
-    public function marcarComoRentado()
+    // Marcar producto como rentado y establecer cuándo estará disponible nuevamente
+    public function marcarComoRentado($fechaDisponible = null)
     {
         $this->estado = 'rentado';
+        $this->disponible_desde = $fechaDisponible ?? Carbon::now()->addDays(3); // por defecto, 3 días
         $this->save();
     }
 
-    public function marcarComoDisponible()
+    // Verificar si está disponible para renta
+    public function estaDisponible()
     {
-        $this->estado = 'disponible';
-        $this->save();
+        if ($this->estado === 'disponible') {
+            return true;
+        }
+
+        // Si la fecha de disponibilidad ya pasó, actualizar estado
+        if ($this->estado === 'rentado' && $this->disponible_desde && $this->disponible_desde->isPast()) {
+            $this->estado = 'disponible';
+            $this->save();
+            return true;
+        }
+
+        return false;
+    }
+
+    // Accesor para obtener precio con atributos adicionales (si deseas usarlo en facturas)
+    public function getPrecioConAtributosAttribute()
+    {
+        $atributos = $this->atributos->pluck('valor');
+        $precioAtributos = $atributos->sum();
+        return $this->precio_renta + $precioAtributos;
     }
 }
