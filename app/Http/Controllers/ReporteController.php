@@ -18,7 +18,60 @@ class ReporteController extends Controller
             ->get();
 
         $total = $pagos->sum('monto');
-        return view('reportes.diario', compact('pagos', 'hoy', 'total'));
+
+        $porMetodo = $pagos->groupBy('metodo_pago')->map(function ($items) {
+            return $items->sum('monto');
+        });
+
+        return view('reportes.diario', compact('pagos', 'hoy', 'total', 'porMetodo'));
+    }
+
+    // --- Reporte Semanal de PAGOS (protegido) ---
+    public function semanal(Request $request)
+    {
+        if (!$this->checkPassword($request)) {
+            return view('reportes.password_form', ['action' => route('reportes.semanal'), 'error' => $request->isMethod('post')]);
+        }
+
+        $inicio = now()->startOfWeek();
+        $fin = now()->endOfWeek();
+
+        $pagos = Pago::with('renta.cliente')
+            ->whereBetween('created_at', [$inicio, $fin])
+            ->orderBy('created_at')
+            ->get();
+
+        $total = $pagos->sum('monto');
+
+        $porMetodo = $pagos->groupBy('metodo_pago')->map(function ($items) {
+            return $items->sum('monto');
+        });
+
+        return view('reportes.semanal', compact('pagos', 'inicio', 'fin', 'total', 'porMetodo'));
+    }
+
+    // --- Reporte Mensual de PAGOS (protegido) ---
+    public function mensual(Request $request)
+    {
+        if (!$this->checkPassword($request)) {
+            return view('reportes.password_form', ['action' => route('reportes.mensual'), 'error' => $request->isMethod('post')]);
+        }
+
+        $inicio = now()->startOfMonth();
+        $fin = now()->endOfMonth();
+
+        $pagos = Pago::with('renta.cliente')
+            ->whereBetween('created_at', [$inicio, $fin])
+            ->orderBy('created_at')
+            ->get();
+
+        $total = $pagos->sum('monto');
+
+        $porMetodo = $pagos->groupBy('metodo_pago')->map(function ($items) {
+            return $items->sum('monto');
+        });
+
+        return view('reportes.mensual', compact('pagos', 'inicio', 'fin', 'total', 'porMetodo'));
     }
 
     // --- Password check helper ---
@@ -34,42 +87,6 @@ class ReporteController extends Controller
             }
         }
         return session('reporte_access_granted', false);
-    }
-
-    // --- Reporte Semanal de PAGOS (protegido) ---
-    public function semanal(Request $request)
-    {
-        if (!$this->checkPassword($request)) {
-            return view('reportes.password_form', ['action' => route('reportes.semanal'), 'error' => $request->isMethod('post')]);
-        }
-        $inicio = now()->startOfWeek();
-        $fin = now()->endOfWeek();
-
-        $pagos = Pago::with('renta.cliente')
-            ->whereBetween('created_at', [$inicio, $fin])
-            ->orderBy('created_at')
-            ->get();
-
-        $total = $pagos->sum('monto');
-        return view('reportes.semanal', compact('pagos', 'inicio', 'fin', 'total'));
-    }
-
-    // --- Reporte Mensual de PAGOS (protegido) ---
-    public function mensual(Request $request)
-    {
-        if (!$this->checkPassword($request)) {
-            return view('reportes.password_form', ['action' => route('reportes.mensual'), 'error' => $request->isMethod('post')]);
-        }
-        $inicio = now()->startOfMonth();
-        $fin = now()->endOfMonth();
-
-        $pagos = Pago::with('renta.cliente')
-            ->whereBetween('created_at', [$inicio, $fin])
-            ->orderBy('created_at')
-            ->get();
-
-        $total = $pagos->sum('monto');
-        return view('reportes.mensual', compact('pagos', 'inicio', 'fin', 'total'));
     }
 
     // --- Salir de la protección de reportes ---

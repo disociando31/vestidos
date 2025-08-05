@@ -1,4 +1,3 @@
-{{-- resources/views/reportes/tabla_pagos.blade.php --}}
 <table class="table table-bordered table-striped">
     <thead class="table-light">
         <tr>
@@ -13,9 +12,18 @@
         </tr>
     </thead>
     <tbody>
-        @php $i = 1; $granTotal = 0; @endphp
+        @php
+            $i = 1;
+            $granTotal = 0;
+            $totalesMetodo = [];
+        @endphp
+
         @forelse($pagos as $pago)
-            @php $granTotal += $pago->monto; @endphp
+            @php
+                $granTotal += $pago->monto;
+                $metodo = strtolower($pago->metodo_pago ?? 'otro');
+                $totalesMetodo[$metodo] = ($totalesMetodo[$metodo] ?? 0) + $pago->monto;
+            @endphp
             <tr>
                 <td>{{ $i++ }}</td>
                 <td>{{ $pago->created_at->format('d/m/Y H:i') }}</td>
@@ -32,10 +40,18 @@
             </tr>
         @endforelse
     </tbody>
+
     <tfoot>
         <tr>
             <th colspan="4" class="text-end">Total recibido:</th>
             <th colspan="4">${{ number_format($granTotal, 2) }}</th>
         </tr>
+
+        @foreach($totalesMetodo as $metodo => $monto)
+            <tr>
+                <th colspan="4" class="text-end">Total {{ ucfirst($metodo) }}:</th>
+                <th colspan="4">${{ number_format($monto, 2) }}</th>
+            </tr>
+        @endforeach
     </tfoot>
 </table>
