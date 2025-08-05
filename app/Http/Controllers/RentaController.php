@@ -75,7 +75,6 @@ class RentaController extends Controller
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
-
         $validado = $validator->validated();
 
         // Crear cliente si es nuevo
@@ -229,5 +228,3 @@ class RentaController extends Controller
         };
     }
 }
-
-

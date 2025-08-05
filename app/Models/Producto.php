@@ -25,7 +25,7 @@ class Producto extends Model
     // Relación con imagen principal (una imagen destacada)
     public function imagenPrincipal()
     {
-        return $this->hasOne(ImagenProducto::class)->where('principal', true);
+        return $this->hasOne(ImagenProducto::class)->where('es_principal', true);
     }
 
     // Relación con todas las imágenes del producto

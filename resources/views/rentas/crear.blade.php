@@ -19,11 +19,16 @@
         <!-- Producto -->
         <div class="mb-3">
             <label for="producto_id" class="form-label">Producto</label>
-            <select name="producto_id" id="producto_id" class="form-select" required>
-                @foreach($productos as $producto)
-                    <option value="{{ $producto->id }}">{{ $producto->nombre }}</option>
-                @endforeach
-            </select>
+    <select name="producto_id" id="producto_id" class="form-select" required>
+    @foreach($productos as $producto)
+        <option value="{{ $producto->id }}"
+                data-disponible="{{ optional($producto->disponible_desde)->format('Y-m-d') }}"
+                data-estado="{{ $producto->estado }}">
+            {{ $producto->nombre }} @if($producto->estado === 'rentado') (rentado hasta {{ optional($producto->disponible_desde)->format('d/m/Y') }}) @endif
+        </option>
+    @endforeach
+</select>
+
         </div>
 
         <!-- Fecha Inicio y Fin -->
@@ -74,4 +79,34 @@
         <button type="submit" class="btn btn-primary">Registrar Renta</button>
     </form>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const productoSelect = document.getElementById("producto_id");
+    const fechaInicioInput = document.getElementById("fecha_inicio");
+
+    function filtrarProductos() {
+        const fechaSeleccionada = new Date(fechaInicioInput.value);
+
+        Array.from(productoSelect.options).forEach(option => {
+            const disponibleDesde = option.dataset.disponible;
+            const estado = option.dataset.estado;
+
+            if (!disponibleDesde || estado === 'disponible') {
+                option.disabled = false;
+                return;
+            }
+
+            const fechaDisponible = new Date(disponibleDesde);
+
+            if (fechaSeleccionada >= fechaDisponible) {
+                option.disabled = false;
+            } else {
+                option.disabled = true;
+            }
+        });
+    }
+
+    fechaInicioInput.addEventListener("change", filtrarProductos);
+});
+</script>
 @endsection

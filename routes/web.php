@@ -53,15 +53,7 @@ Route::resource('clientes', ClienteController::class)->names([
 ]);
 
 // Rentas
-Route::resource('rentas', RentaController::class)->names([
-    'index'   => 'rentas.index',
-    'create'  => 'rentas.crear',
-    'store'   => 'rentas.guardar',
-    'show'    => 'rentas.mostrar',
-    'edit'    => 'rentas.editar',
-    'update'  => 'rentas.actualizar',
-    'destroy' => 'rentas.eliminar',
-]);
+Route::resource('rentas', RentaController::class);
 
 Route::post('/reportes/validar/{tipo}', function(Request $request, $tipo) {
     if ($request->clave === 'Admin2025') {

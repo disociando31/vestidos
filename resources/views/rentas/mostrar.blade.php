@@ -65,18 +65,26 @@
                             <td>${{ number_format($item->precio_unitario, 2) }}</td>
                             <td>${{ number_format($item->total, 2) }}</td>
                             <td>
-                                @php
-                                    $atributos = is_string($item->atributos) ? json_decode($item->atributos, true) : [];
-                                @endphp
-                                @if(!empty($atributos))
-                                    <ul class="mb-0">
-                                        @foreach($atributos as $nombre => $valor)
-                                            <li><strong>{{ $nombre }}:</strong> {{ $valor }}</li>
-                                        @endforeach
-                                    </ul>
-                                @else
-                                    <span class="text-muted">Sin atributos</span>
-                                @endif
+        @php
+    $atributosArray = [];
+
+    if (is_string($item->atributos)) {
+        $atributosArray = json_decode($item->atributos, true) ?? [];
+    } elseif (is_array($item->atributos)) {
+        $atributosArray = $item->atributos;
+    }
+@endphp
+
+@if(!empty($atributosArray) && is_iterable($atributosArray))
+    <ul class="mb-0">
+        @foreach($atributosArray as $nombre => $valor)
+            <li><strong>{{ $nombre }}:</strong> {{ $valor }}</li>
+        @endforeach
+    </ul>
+@else
+    <span class="text-muted">Sin atributos</span>
+@endif
+
                             </td>
                         </tr>
                     @endforeach
