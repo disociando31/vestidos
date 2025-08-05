@@ -5,12 +5,13 @@ use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\RentaController;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\FacturaController;
+use Illuminate\Http\Request;
 use App\Models\Producto;
 use App\Models\Renta;
-use App\Models\Pago;
-use Illuminate\Http\Request;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -18,16 +19,19 @@ use Illuminate\Http\Request;
 */
 
 // Página principal → Calendario
-Route::get('/',[\App\Http\Controllers\CalendarioController::class, 'index'])->name('calendario.index');
+Route::get('/', [CalendarioController::class, 'index'])->name('calendario.index');
 
 // API eventos para FullCalendar
 Route::get('/calendario/eventos', [CalendarioController::class, 'eventos'])->name('calendario.eventos');
+
 // Reportes
 Route::prefix('reportes')->group(function () {
+    Route::match(['get', 'post'], 'reportes/mensual', [ReporteController::class, 'mensual'])->name('reportes.mensual');
+    Route::match(['get', 'post'], 'reportes/semanal', [ReporteController::class, 'semanal'])->name('reportes.semanal');
+    Route::post('reportes/salir', [ReporteController::class, 'salirProteccionReporte'])->name('reportes.salirProteccion');
     Route::get('/diario', [\App\Http\Controllers\ReporteController::class, 'diario'])->name('reportes.diario');
-    Route::get('/semanal', [\App\Http\Controllers\ReporteController::class, 'semanal'])->name('reportes.semanal');
-    Route::get('/mensual', [\App\Http\Controllers\ReporteController::class, 'mensual'])->name('reportes.mensual');
 });
+
 // Productos
 Route::resource('productos', ProductoController::class)->names([
     'index'   => 'productos.index',
@@ -37,6 +41,17 @@ Route::resource('productos', ProductoController::class)->names([
     'edit'    => 'productos.editar',
     'update'  => 'productos.actualizar',
     'destroy' => 'productos.eliminar',
+]);
+
+// Rentas
+Route::resource('rentas', RentaController::class)->names([
+    'index'   => 'rentas.index',
+    'create'  => 'rentas.crear',
+    'store'   => 'rentas.store',
+    'show'    => 'rentas.mostrar',
+    'edit'    => 'rentas.editar',
+    'update'  => 'rentas.actualizar',
+    'destroy' => 'rentas.eliminar',
 ]);
 
 Route::get('/rentas/eventos', [RentaController::class, 'eventos'])->name('rentas.eventos');
@@ -52,17 +67,7 @@ Route::resource('clientes', ClienteController::class)->names([
     'destroy' => 'clientes.eliminar',
 ]);
 
-// Rentas
-Route::resource('rentas', RentaController::class);
-
-Route::post('/reportes/validar/{tipo}', function(Request $request, $tipo) {
-    if ($request->clave === 'Admin2025') {
-        session(['reporte_autorizado' => true]);
-    }
-    return redirect()->route("reportes.$tipo");
-})->name('reportes.validar');
-
-// Devolución de rentas → POST
+// Devolución de rentas
 Route::post('/rentas/{renta}/devolver', [RentaController::class, 'devolver'])->name('rentas.devolver');
 
 // Facturas
@@ -78,6 +83,14 @@ Route::prefix('pagos')->group(function () {
     Route::get('/{pago}', [PagoController::class, 'show'])->name('pagos.show');
     Route::delete('/{pago}', [PagoController::class, 'destroy'])->name('pagos.eliminar');
 });
+
+// Validación con clave para ver reportes
+Route::post('/reportes/validar/{tipo}', function(Request $request, $tipo) {
+    if ($request->clave === 'Admin2025') {
+        session(['reporte_autorizado' => true]);
+    }
+    return redirect()->route("reportes.$tipo");
+})->name('reportes.validar');
 
 // Dashboard (estadísticas)
 Route::get('/dashboard', function () {
@@ -95,4 +108,3 @@ Route::get('/dashboard', function () {
         'rentasAtrasadas'
     ));
 })->name('dashboard');
-

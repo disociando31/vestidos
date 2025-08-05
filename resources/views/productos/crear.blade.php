@@ -8,9 +8,32 @@
         <h5 class="mb-0">Registrar Nuevo Producto</h5>
     </div>
     <div class="card-body">
+        @if ($errors->any())
+    <div class="alert alert-danger">
+        <strong>¡Error!</strong>
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+@if (session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
+
+@if (session('exito'))
+    <div class="alert alert-success">
+        {{ session('exito') }}
+    </div>
+@endif
         <form action="{{ route('productos.guardar') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
+            {{-- Tipo de producto --}}
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Tipo</label>
@@ -23,22 +46,26 @@
                 </div>
             </div>
 
+            {{-- Nombre --}}
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
                 <input type="text" name="nombre" class="form-control" required>
             </div>
 
+            {{-- Descripción --}}
             <div class="mb-3">
                 <label class="form-label">Descripción</label>
                 <textarea name="descripcion" class="form-control" rows="3" required></textarea>
             </div>
 
+            {{-- Precio de renta --}}
             <div class="mb-3">
                 <label class="form-label">Precio de Renta</label>
                 <input type="number" name="precio_renta" step="0.01" min="0" class="form-control" required>
             </div>
 
-            <div id="atributos-container">
+            {{-- Atributos dinámicos --}}
+            <div id="atributos-container" class="mb-3">
                 <!-- Atributos dinámicos se agregarán aquí -->
             </div>
 
@@ -46,12 +73,16 @@
                 Agregar Atributo
             </button>
 
+            {{-- Imágenes --}}
             <div class="mb-3">
                 <label class="form-label">Imágenes</label>
                 <input type="file" name="imagenes[]" class="form-control" multiple accept="image/*">
             </div>
 
-            <button type="submit" class="btn btn-primary">Guardar Producto</button>
+            {{-- Botón Guardar --}}
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">Guardar Producto</button>
+            </div>
         </form>
     </div>
 </div>

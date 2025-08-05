@@ -13,7 +13,8 @@ class Pago extends Model
         'monto',
         'metodo_pago',
         'notas',
-        'recibido_por'
+        'recibido_por',
+        'fecha_pago'
     ];
 
     public function renta(): BelongsTo

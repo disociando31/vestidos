@@ -91,6 +91,38 @@
                 </tbody>
             </table>
         </div>
+        @if(!empty($renta->adicionales))
+    <h6 class="mt-4">Trajes de Caballero / Adicionales</h6>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Color</th>
+                    <th>Talla</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($renta->adicionales as $adicional)
+                    <tr>
+                        <td>{{ $adicional['nombre'] ?? $adicional['tipo'] ?? '-' }}</td>
+                        <td>{{ $adicional['color'] ?? '-' }}</td>
+                        <td>{{ $adicional['talla'] ?? '-' }}</td>
+                        <td>
+                            @if(isset($adicional['precio']) && $adicional['precio'] > 0)
+                                ${{ number_format($adicional['precio'], 2) }}
+                            @else
+                                -
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+@endif
+
 
         {{-- Formulario para abonar --}}
         <form action="{{ route('pagos.store', $renta) }}" method="POST" class="mt-3">

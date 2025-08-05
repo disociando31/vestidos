@@ -11,15 +11,18 @@ class Producto extends Model
     use HasFactory;
 
     protected $fillable = [
+        'tipo',
         'nombre',
+        'codigo',
         'descripcion',
         'precio_renta',
         'estado',
-        'disponible_desde',
+        'rentado',
+        'fecha_disponible',
     ];
 
     protected $dates = [
-        'disponible_desde',
+        'fecha_disponible' => 'datetime',
     ];
 
     // Relación con imagen principal (una imagen destacada)
@@ -32,6 +35,11 @@ class Producto extends Model
     public function imagenes()
     {
         return $this->hasMany(ImagenProducto::class);
+    }
+    public function getImagenPrincipalAttribute()
+    {
+    // Si no hay principal, toma la primera imagen, si no, null
+    return $this->imagenPrincipal()->first() ?? $this->imagenes()->first();
     }
 
     // Relación con atributos (adicionales, ej: zapatos, camisas)
@@ -50,26 +58,23 @@ class Producto extends Model
     public function marcarComoRentado($fechaDisponible = null)
     {
         $this->estado = 'rentado';
-        $this->disponible_desde = $fechaDisponible ?? Carbon::now()->addDays(3); // por defecto, 3 días
+        $this->fecha_disponible = $fechaDisponible ?? Carbon::now()->addDays(3); // por defecto, 3 días
         $this->save();
     }
 
     // Verificar si está disponible para renta
-    public function estaDisponible()
-    {
-        if ($this->estado === 'disponible') {
-            return true;
-        }
-
-        // Si la fecha de disponibilidad ya pasó, actualizar estado
-        if ($this->estado === 'rentado' && $this->disponible_desde && $this->disponible_desde->isPast()) {
-            $this->estado = 'disponible';
-            $this->save();
-            return true;
-        }
-
-        return false;
+public function estaDisponible()
+{
+    if ($this->estado === 'disponible') {
+        return true;
     }
+
+    if ($this->estado === 'rentado' && $this->fecha_disponible) {
+        return Carbon::parse($this->fecha_disponible)->isPast();
+    }
+
+    return false;
+}
 
     // Accesor para obtener precio con atributos adicionales (si deseas usarlo en facturas)
     public function getPrecioConAtributosAttribute()

@@ -23,6 +23,7 @@ class Renta extends Model
     protected $casts = [
         'fecha_renta' => 'datetime',
         'fecha_devolucion' => 'datetime',
+        'adicionales' => 'array', // Si tienes atributos adicionales
     ];
     public function cliente()
     {

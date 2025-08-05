@@ -15,13 +15,16 @@ class Cliente extends Model
         'nombre',
         'email',
         'telefono',
+        'telefono2',
         'direccion',
         'fecha_registro',
-        'dias_atraso' // Nuevo campo según tus requerimientos
+        'fecha_cumpleanos',
+        'dias_atraso'
     ];
 
     protected $casts = [
-        'fecha_registro' => 'date'
+        'fecha_registro' => 'date',
+        'fecha_cumpleanos' => 'date'
     ];
     
     public function pagos(): HasManyThrough

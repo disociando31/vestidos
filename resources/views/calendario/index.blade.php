@@ -40,8 +40,44 @@
         <a href="{{ route('reportes.semanal') }}" class="btn btn-secondary"><i class="bi bi-calendar-week"></i> Reporte Semanal</a>
         <a href="{{ route('reportes.mensual') }}" class="btn btn-secondary"><i class="bi bi-calendar-month"></i> Reporte Mensual</a>
     </div>
-
+    
     <div class="col-md-9 p-3">
+        {{-- Cuadros resumen activos --}}
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card border-success text-success shadow-sm">
+                    <div class="card-body">
+                        <h6 class="mb-1">Rentas Hoy</h6>
+                        <span class="display-6 fw-bold">{{ $rentasHoy }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-info text-info shadow-sm">
+                    <div class="card-body">
+                        <h6 class="mb-1">Rentas Semana</h6>
+                        <span class="display-6 fw-bold">{{ $rentasSemana }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-primary text-primary shadow-sm">
+                    <div class="card-body">
+                        <h6 class="mb-1">Rentas Mes</h6>
+                        <span class="display-6 fw-bold">{{ $rentasMes }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-danger text-danger shadow-sm">
+                    <div class="card-body">
+                        <h6 class="mb-1">Atrasadas</h6>
+                        <span class="display-6 fw-bold">{{ $rentasAtrasadas }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <h3>Calendario de Rentas</h3>
         <div id="calendar"></div>
     </div>
@@ -51,7 +87,6 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.min.js"></script>
-<script src="{{ asset('js/calendario.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
@@ -80,9 +115,12 @@ document.addEventListener('DOMContentLoaded', function() {
             } else if (info.event.extendedProps.estado === 'pagado') {
                 info.el.style.backgroundColor = '#28a745'; // Verde
                 info.el.style.borderColor = '#28a745';
-            } else {
-                info.el.style.backgroundColor = '#dc3545'; // Rojo (pendiente)
+            } else if (info.event.extendedProps.estado === 'atrasado') {
+                info.el.style.backgroundColor = '#dc3545'; // Rojo
                 info.el.style.borderColor = '#dc3545';
+            } else {
+                info.el.style.backgroundColor = '#6c757d'; // Gris para otros
+                info.el.style.borderColor = '#6c757d';
             }
         }
     });

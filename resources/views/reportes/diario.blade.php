@@ -1,8 +1,7 @@
 @extends('layouts.app')
-
-@section('title', 'Reporte Diario')
+@section('title', 'Reporte Diario de Pagos')
 
 @section('content')
-    <h3>Reporte Diario ({{ \Carbon\Carbon::parse($hoy)->format('d/m/Y') }})</h3>
-    @include('reportes._tabla', ['rentas' => $rentas])
+    <h3>Pagos recibidos el {{ \Carbon\Carbon::parse($hoy)->format('d/m/Y') }}</h3>
+    @include('reportes.tabla_pagos', ['pagos' => $pagos])
 @endsection

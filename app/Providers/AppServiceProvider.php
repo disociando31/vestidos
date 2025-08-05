@@ -5,9 +5,11 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Foundation\MaintenanceMode;
 use Illuminate\Foundation\MaintenanceModeManager;
 use Illuminate\Filesystem\Filesystem;
+use Carbon\Carbon;
 
 class AppServiceProvider extends ServiceProvider
 {
+    
     public function register(): void
     {
         // Solución para el error "Target class [files] does not exist"
@@ -23,6 +25,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        Carbon::setLocale('es');
     }
 }

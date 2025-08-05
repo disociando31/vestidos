@@ -46,7 +46,7 @@ class ProductoController extends Controller
 public function store(Request $request)
 { 
     $validator = Validator::make($request->all(), [
-        'tipo' => 'required|in:traje,vestido,vestido_15',
+        'tipo' => 'required|in:traje,vestido,vestido_15,bodas,primeras_comuniones',
         'nombre' => 'required|string|max:255',
         'descripcion' => 'required|string',
         'precio_renta' => 'required|numeric|min:0',
@@ -69,12 +69,22 @@ public function store(Request $request)
         $prefijo = match ($validated['tipo']) {
             'traje' => 'TRA',
             'vestido' => 'VES',
-            'vestido_15' => 'V15'
+            'vestido_15' => 'V15',
         };
 
-        // Contar productos del mismo tipo para generar consecutivo
-        $contador = Producto::where('tipo', $validated['tipo'])->count() + 1;
-        $codigo = $prefijo . str_pad($contador, 3, '0', STR_PAD_LEFT);
+        // Obtener el último código
+        $ultimoCodigo = Producto::where('tipo', $validated['tipo'])
+            ->whereNotNull('codigo')
+            ->orderBy('id', 'desc')
+            ->value('codigo');
+
+        $numero = 1;
+
+        if ($ultimoCodigo && preg_match('/\d+$/', $ultimoCodigo, $coincidencias)) {
+            $numero = intval($coincidencias[0]) + 1;
+        }
+
+        $codigo = $prefijo . str_pad($numero, 3, '0', STR_PAD_LEFT);
 
         // Crear producto
         $producto = Producto::create([
@@ -83,7 +93,9 @@ public function store(Request $request)
             'codigo' => $codigo,
             'descripcion' => $validated['descripcion'],
             'precio_renta' => $validated['precio_renta'],
-            'estado' => 'disponible'
+            'estado' => 'disponible',
+            'rentado' => 0,
+            'fecha_disponible' => now()
         ]);
 
         // Guardar atributos

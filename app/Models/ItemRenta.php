@@ -11,13 +11,22 @@ class ItemRenta extends Model
     protected $fillable = [
         'renta_id',
         'producto_id',
+        'cantidad',
         'precio_unitario',
+        'subtotal',
+        'descuento',
+        'total',
+        'atributos',
         'camisa_color',
         'zapatos_color',
         'zapatos_talla',
         'cartera_color',
         'otro_nombre',
         'otro_precio',
+    ];
+
+    protected $casts = [
+        'atributos' => 'array',
     ];
 
     public function renta()

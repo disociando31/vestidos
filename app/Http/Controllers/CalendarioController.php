@@ -9,7 +9,30 @@ class CalendarioController extends Controller
 {
     public function index()
     {
-        return view('calendario.index');
+        $hoy = now()->toDateString();
+        $semanaInicio = now()->startOfWeek();
+        $semanaFin = now()->endOfWeek();
+        $mesInicio = now()->startOfMonth();
+        $mesFin = now()->endOfMonth();
+
+        // Solo cuenta rentas activas (NO devueltas)
+        $rentasHoy = Renta::where('estado', '!=', 'devuelto')
+            ->whereDate('fecha_renta', $hoy)
+            ->count();
+
+        $rentasSemana = Renta::where('estado', '!=', 'devuelto')
+            ->whereBetween('fecha_renta', [$semanaInicio, $semanaFin])
+            ->count();
+
+        $rentasMes = Renta::where('estado', '!=', 'devuelto')
+            ->whereBetween('fecha_renta', [$mesInicio, $mesFin])
+            ->count();
+
+        $rentasAtrasadas = Renta::where('estado', 'atrasado')->count();
+
+        return view('calendario.index', compact(
+            'rentasHoy', 'rentasSemana', 'rentasMes', 'rentasAtrasadas'
+        ));
     }
 
     public function eventos(Request $request)

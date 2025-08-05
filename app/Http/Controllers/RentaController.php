@@ -38,135 +38,140 @@ class RentaController extends Controller
         return view('rentas.index', compact('rentas'));
     }
 
-    public function create()
-    {
-        $clientes = Cliente::orderBy('nombre')->get();
-        $productos = Producto::where('estado', 'disponible')->with('imagenPrincipal')->get();
+public function create()
+{
+    $clientes = Cliente::orderBy('nombre')->get();
 
-        return view('rentas.crear', compact('clientes', 'productos'));
+    // Traer productos con imágenes principales y atributos
+    $productos = Producto::with('imagenPrincipal')->get()->filter(function ($producto) {
+        return $producto->estaDisponible() || $producto->estado === 'rentado';
+    });
+
+    // Agregar img_url para cada producto
+    $productos = $productos->map(function ($producto) {
+        $ruta = $producto->imagenPrincipal?->ruta;
+        if ($ruta && \Storage::disk('public')->exists($ruta)) {
+            $producto->img_url = asset('storage/' . $ruta);
+        } else {
+            $producto->img_url = asset('images/sin_imagen.jpg'); // Cambia esta ruta si tu "sin_imagen" está en otra carpeta
+        }
+        return $producto;
+    });
+
+    return view('rentas.crear', compact('clientes', 'productos'));
+}
+
+
+public function store(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'cliente_id' => 'required|exists:clientes,id',
+        'fecha_inicio' => 'required|date',
+        'fecha_devolucion' => 'required|date|after:fecha_inicio',
+        'items' => 'required|array|min:1',
+        'items.*.producto_id' => 'required|exists:productos,id',
+        'items.*.cantidad' => 'required|integer|min:1',
+        'notas' => 'nullable|string',
+        'recibido_por' => 'nullable|string|max:100',
+        'abono_inicial' => 'nullable|numeric|min:0',
+        // No valides aquí los adicionales, porque puede ser un array asociativo
+    ]);
+
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
     }
+    $validado = $validator->validated();
 
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'cliente_id' => 'nullable|exists:clientes,id',
-            'nuevo_cliente_nombre' => 'nullable|required_without:cliente_id|string|max:255',
-            'nuevo_cliente_telefono' => 'nullable|string|max:20',
-            'telefono_alterno' => 'nullable|string|max:20',
+    // ⬇️ Recupera los adicionales del request
+    $adicionales = $request->input('adicionales', []);
 
-            'fecha_renta' => 'required|date',
-            'fecha_devolucion' => 'required|date|after:fecha_renta',
-            'items' => 'required|array|min:1',
-            'items.*.producto_id' => 'required|exists:productos,id',
-            'items.*.cantidad' => 'required|integer|min:1',
-            'notas' => 'nullable|string',
-            'recibido_por' => 'required|string|max:100',
-            'abono_inicial' => 'nullable|numeric|min:0',
+    DB::beginTransaction();
 
-            // Campos adicionales
-            'camisa_color' => 'nullable|string|max:100',
-            'zapatos_color' => 'nullable|string|max:100',
-            'zapatos_talla' => 'nullable|string|max:20',
-            'cartera_color' => 'nullable|string|max:100',
-            'otro_nombre' => 'nullable|string|max:100',
-            'otro_precio' => 'nullable|numeric|min:0'
+    try {
+        $renta = Renta::create([
+            'cliente_id' => $validado['cliente_id'],
+            'fecha_renta' => $validado['fecha_inicio'],
+            'fecha_devolucion' => $validado['fecha_devolucion'],
+            'monto_total' => 0,
+            'monto_pagado' => 0,
+            'estado' => 'pendiente',
+            'notas' => $validado['notas'] ?? null,
+            'recibido_por' => $validado['recibido_por'] ?? null,
+            // No guardes aquí adicionales, lo hacemos más abajo
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-        $validado = $validator->validated();
+        $total = 0;
 
-        // Crear cliente si es nuevo
-        if (!empty($validado['cliente_id'])) {
-            $cliente_id = $validado['cliente_id'];
-        } else {
-            $nuevoCliente = Cliente::create([
-                'nombre' => $validado['nuevo_cliente_nombre'],
-                'telefono' => $validado['nuevo_cliente_telefono'] ?? null,
-                'telefono_alterno' => $validado['telefono_alterno'] ?? null,
-                'fecha_registro' => now()
-            ]);
-            $cliente_id = $nuevoCliente->id;
-        }
+        foreach ($validado['items'] as $item) {
+            $producto = Producto::findOrFail($item['producto_id']);
+            $subtotal = $producto->precio_renta * $item['cantidad'];
+            $atributos = $producto->atributos->pluck('valor', 'nombre')->toArray();
+            $totalAtributos = array_sum(array_map('floatval', $atributos));
+            $totalItem = $subtotal + $totalAtributos;
 
-        DB::beginTransaction();
-
-        try {
-            $renta = Renta::create([
-                'cliente_id' => $cliente_id,
-                'fecha_renta' => $validado['fecha_renta'],
-                'fecha_devolucion' => $validado['fecha_devolucion'],
-                'monto_total' => 0,
-                'monto_pagado' => 0,
-                'estado' => 'pendiente',
-                'notas' => $validado['notas'] ?? null,
-                'recibido_por' => $validado['recibido_por'],
-
-                // Guardar campos adicionales
-                'camisa_color' => $validado['camisa_color'] ?? null,
-                'zapatos_color' => $validado['zapatos_color'] ?? null,
-                'zapatos_talla' => $validado['zapatos_talla'] ?? null,
-                'cartera_color' => $validado['cartera_color'] ?? null,
-                'otro_nombre' => $validado['otro_nombre'] ?? null,
-                'otro_precio' => $validado['otro_precio'] ?? 0,
+            ItemRenta::create([
+                'renta_id' => $renta->id,
+                'producto_id' => $producto->id,
+                'cantidad' => $item['cantidad'],
+                'precio_unitario' => $producto->precio_renta,
+                'subtotal' => $subtotal,
+                'descuento' => 0,
+                'total' => $totalItem,
+                'atributos' => json_encode($atributos),
             ]);
 
-            $total = 0;
-
-            foreach ($validado['items'] as $item) {
-                $producto = Producto::findOrFail($item['producto_id']);
-                $subtotal = $producto->precio_renta * $item['cantidad'];
-                $atributos = $producto->atributos->pluck('valor', 'nombre')->toArray();
-                $totalAtributos = array_sum(array_map('floatval', $atributos));
-                $totalItem = $subtotal + $totalAtributos;
-
-                ItemRenta::create([
-                    'renta_id' => $renta->id,
-                    'producto_id' => $producto->id,
-                    'cantidad' => $item['cantidad'],
-                    'precio_unitario' => $producto->precio_renta,
-                    'subtotal' => $subtotal,
-                    'descuento' => 0,
-                    'total' => $totalItem,
-                    'atributos' => json_encode($atributos)
-                ]);
-
-                $total += $totalItem;
-                $producto->marcarComoRentado();
-            }
-
-            // Agregar el precio del objeto adicional si se proporcionó
-            if (!empty($validado['otro_precio'])) {
-                $total += floatval($validado['otro_precio']);
-            }
-
-            $renta->monto_total = $total;
-            $renta->save();
-
-            // Registrar abono inicial
-            $abono = $validado['abono_inicial'] ?? 0;
-            if ($abono > 0) {
-                Pago::create([
-                    'renta_id' => $renta->id,
-                    'monto' => $abono,
-                    'fecha_pago' => now(),
-                    'metodo_pago' => 'efectivo',
-                    'notas' => 'Abono inicial',
-                    'recibido_por' => $validado['recibido_por']
-                ]);
-
-                $renta->increment('monto_pagado', $abono);
-                $renta->actualizarEstado();
-            }
-
-            DB::commit();
-            return redirect()->route('rentas.mostrar', $renta)->with('exito', 'Renta creada correctamente.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Error al crear la renta: ' . $e->getMessage());
+            $total += $totalItem;
+            $producto->marcarComoRentado($validado['fecha_devolucion']);
         }
+
+        // Procesa los adicionales: suma sus precios y guárdalos como JSON
+        $totalAdicionales = 0;
+        $adicionalesClean = [];
+
+        foreach ($adicionales as $adicional) {
+            if (!empty($adicional['nombre']) && isset($adicional['precio'])) {
+                $precio = floatval($adicional['precio']);
+                $totalAdicionales += $precio;
+                $adicionalesClean[] = [
+                    'nombre' => $adicional['nombre'],
+                    'color' => $adicional['color'] ?? null,
+                    'talla' => $adicional['talla'] ?? null,
+                    'precio' => $precio
+                ];
+            }
+        }
+
+        // Suma el total de adicionales al total general
+        $total += $totalAdicionales;
+
+        // Guarda los adicionales en la columna JSON
+        $renta->adicionales = $adicionalesClean;
+        $renta->monto_total = $total;
+        $renta->save();
+
+        // Registrar abono inicial si hay
+        $abono = $validado['abono_inicial'] ?? 0;
+        if ($abono > 0) {
+            Pago::create([
+                'renta_id' => $renta->id,
+                'monto' => $abono,
+                //'fecha_pago' => now(), // sólo si tienes esta columna
+                'metodo_pago' => 'efectivo',
+                'notas' => 'Abono inicial',
+                'recibido_por' => $validado['recibido_por']
+            ]);
+
+            $renta->increment('monto_pagado', $abono);
+            $renta->actualizarEstado();
+        }
+
+        DB::commit();
+        return redirect()->route('rentas.mostrar', $renta)->with('exito', 'Renta creada correctamente.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'Error al crear la renta: ' . $e->getMessage());
     }
+}
 
     public function show(Renta $renta)
     {
@@ -198,33 +203,5 @@ class RentaController extends Controller
             DB::rollBack();
             return back()->with('error', 'Error al registrar la devolución: ' . $e->getMessage());
         }
-    }
-
-    public function eventos()
-    {
-        $rentas = Renta::where('estado', '!=', 'devuelto')->with('cliente')->get();
-
-        $eventos = $rentas->map(function ($renta) {
-            return [
-                'id' => $renta->id,
-                'title' => $renta->cliente->nombre,
-                'start' => $renta->fecha_renta,
-                'end' => $renta->fecha_devolucion,
-                'color' => $this->getColorPorEstado($renta->estado),
-                'url' => route('rentas.show', $renta),
-            ];
-        });
-
-        return response()->json($eventos);
-    }
-
-    protected function getColorPorEstado($estado)
-    {
-        return match ($estado) {
-            'pendiente' => '#ffc107',
-            'abonado' => '#17a2b8',
-            'pagado' => '#28a745',
-            default => '#6c757d',
-        };
     }
 }
