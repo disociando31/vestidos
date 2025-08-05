@@ -42,6 +42,9 @@ Route::resource('productos', ProductoController::class)->names([
     'update'  => 'productos.actualizar',
     'destroy' => 'productos.eliminar',
 ]);
+Route::get('/productos/{producto}/edit', [ProductoController::class, 'edit'])->name('productos.editar');
+Route::put('/productos/{producto}', [ProductoController::class, 'update'])->name('productos.actualizar');
+
 
 // Rentas
 Route::resource('rentas', RentaController::class)->names([
@@ -53,7 +56,8 @@ Route::resource('rentas', RentaController::class)->names([
     'update'  => 'rentas.actualizar',
     'destroy' => 'rentas.eliminar',
 ]);
-
+Route::get('/rentas/{renta}/edit', [RentaController::class, 'edit'])->name('rentas.editar');
+Route::put('/rentas/{renta}', [RentaController::class, 'update'])->name('rentas.actualizar');
 Route::get('/rentas/eventos', [RentaController::class, 'eventos'])->name('rentas.eventos');
 
 // Clientes

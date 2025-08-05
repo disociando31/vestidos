@@ -93,6 +93,6 @@ class ReporteController extends Controller
     public function salirProteccionReporte()
     {
         session()->forget('reporte_access_granted');
-        return redirect()->route('dashboard');
+        return redirect()->route('calendario.index');
     }
 }

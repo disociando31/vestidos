@@ -70,6 +70,8 @@ public function store(Request $request)
             'traje' => 'TRA',
             'vestido' => 'VES',
             'vestido_15' => 'V15',
+            'bodas' => 'BOD',
+            'primeras_comuniones' => 'PCO',
         };
 
         // Obtener el último código
@@ -130,4 +132,74 @@ public function store(Request $request)
         return back()->with('error', 'Error al crear el producto: ' . $e->getMessage())->withInput();
     }
 }
+public function edit(Producto $producto)
+{
+    $producto->load(['atributos', 'imagenes']);
+    return view('productos.editar', compact('producto'));
+}
+public function update(Request $request, Producto $producto)
+{
+    $validator = Validator::make($request->all(), [
+        'tipo' => 'required|in:traje,vestido,vestido_15,bodas,primeras_comuniones',
+        'nombre' => 'required|string|max:255',
+        'descripcion' => 'required|string',
+        'precio_renta' => 'required|numeric|min:0',
+        'atributo_nombre' => 'required|array',
+        'atributo_valor' => 'required|array',
+        'imagenes' => 'nullable|array',
+        'imagenes.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+    ]);
+
+    if ($validator->fails()) {
+        return back()->withErrors($validator)->withInput();
+    }
+
+    $validated = $validator->validated();
+
+    DB::beginTransaction();
+
+    try {
+        // Actualizar campos básicos
+        $producto->update([
+            'tipo' => $validated['tipo'],
+            'nombre' => $validated['nombre'],
+            'descripcion' => $validated['descripcion'],
+            'precio_renta' => $validated['precio_renta']
+        ]);
+
+        // Eliminar y recrear atributos
+        $producto->atributos()->delete();
+
+        foreach ($validated['atributo_nombre'] as $index => $nombre) {
+            AtributoProducto::create([
+                'producto_id' => $producto->id,
+                'nombre' => $nombre,
+                'valor' => $validated['atributo_valor'][$index] ?? ''
+            ]);
+        }
+
+        // Subir nuevas imágenes si hay
+        if ($request->hasFile('imagenes')) {
+            foreach ($request->file('imagenes') as $imagen) {
+                $ruta = $imagen->store('imagenes_productos', 'public');
+
+                ImagenProducto::create([
+                    'producto_id' => $producto->id,
+                    'ruta' => $ruta,
+                    'es_principal' => false
+                ]);
+            }
+        }
+
+        DB::commit();
+
+        return redirect()->route('productos.mostrar', $producto)
+            ->with('exito', 'Producto actualizado correctamente.');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'Error al actualizar el producto: ' . $e->getMessage())->withInput();
+    }
+}
+
 }

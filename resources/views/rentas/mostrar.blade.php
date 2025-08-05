@@ -4,15 +4,19 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Detalle de Renta #{{ $renta->id }}</h5>
-        <div>
-            <a href="{{ route('rentas.index') }}" class="btn btn-secondary btn-sm">Volver al listado</a>
-            <a href="{{ route('facturas.mostrar', $renta) }}" target="_blank" class="btn btn-outline-primary btn-sm ms-2">
-                <i class="fas fa-print"></i> Imprimir Factura
-            </a>
-        </div>
+<div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Detalle de Renta #{{ $renta->id }}</h5>
+    <div class="d-flex gap-2">
+        <a href="{{ route('rentas.index') }}" class="btn btn-secondary btn-sm">Volver al listado</a>
+        <a href="{{ route('rentas.editar', $renta->id) }}" class="btn btn-warning btn-sm">
+            <i class="fas fa-edit"></i> Editar Renta
+        </a>
+        <a href="{{ route('facturas.mostrar', $renta) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-print"></i> Imprimir Factura
+        </a>
     </div>
+</div>
+
 
     <div class="card-body">
         <h6>Cliente:</h6>
@@ -186,7 +190,9 @@
         </div>
 
         <h6 class="mt-3">Resumen de Pagos:</h6>
+        
         <p>
+            @php $renta->refresh(); @endphp
             <strong>Total:</strong> ${{ number_format($renta->monto_total, 2) }} <br>
             <strong>Pagado:</strong> ${{ number_format($renta->monto_pagado, 2) }} <br>
             <strong>Pendiente:</strong> ${{ number_format($renta->saldo, 2) }}

@@ -42,6 +42,8 @@
                         <option value="traje">Traje Caballero</option>
                         <option value="vestido">Vestido</option>
                         <option value="vestido_15">Vestido 15 Años</option>
+                        <option value="bodas">Bodas</option>
+                        <option value="primeras_comuniones">Primeras Comuniones</option>
                     </select>
                 </div>
             </div>

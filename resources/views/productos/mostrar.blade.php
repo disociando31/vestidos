@@ -4,12 +4,18 @@
 
 @section('content')
 <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Detalle de Producto: {{ $producto->nombre }}</h5>
+<div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Detalle de Producto: {{ $producto->nombre }}</h5>
+    <div class="d-flex align-items-center gap-2">
         <span class="badge bg-{{ $producto->estado == 'disponible' ? 'success' : ($producto->estado == 'rentado' ? 'warning' : 'secondary') }}">
             {{ ucfirst($producto->estado) }}
         </span>
+        <a href="{{ route('productos.editar', $producto->id) }}" class="btn btn-warning btn-sm">
+            <i class="fas fa-edit"></i> Editar Producto
+        </a>
     </div>
+</div>
+
     <div class="card-body">
         <div class="row">
             <!-- Información del producto -->
