@@ -71,8 +71,7 @@
 <script>
 const productos = @json($productos->values());
 let prodIdx = 0;
-let trajeIdx = 0;
-let adicionalIdx = 0;
+let adicionalIdx = 0; // ÚNICO índice para TODO adicional, traje, etc.
 
 // --- PRODUCTOS ---
 function productoRow(idx) {
@@ -211,20 +210,20 @@ $(document).ready(function() {
 });
 
 // --- TRAJE CABALLERO ---
-function generarComponenteAdicional(nombre, color = '', talla = '', precio = '') {
+function generarComponenteAdicional(nombre, color = '', talla = '', precio = '', idx) {
     return `
         <div class="row mb-2 adicional-componente">
             <div class="col-md-3">
-                <input type="text" name="adicionales[${trajeIdx}][nombre]" class="form-control" value="${nombre}" readonly>
+                <input type="text" name="adicionales[${idx}][nombre]" class="form-control" value="${nombre}" readonly>
             </div>
             <div class="col-md-3">
-                <input type="text" name="adicionales[${trajeIdx}][color]" class="form-control" placeholder="Color" value="${color}">
+                <input type="text" name="adicionales[${idx}][color]" class="form-control" placeholder="Color" value="${color}">
             </div>
             <div class="col-md-3">
-                <input type="text" name="adicionales[${trajeIdx}][talla]" class="form-control" placeholder="Talla" value="${talla}">
+                <input type="text" name="adicionales[${idx}][talla]" class="form-control" placeholder="Talla" value="${talla}">
             </div>
             <div class="col-md-2">
-                <input type="number" name="adicionales[${trajeIdx}][precio]" class="form-control" placeholder="$ Precio" step="0.01" value="${precio}">
+                <input type="number" name="adicionales[${idx}][precio]" class="form-control" placeholder="$ Precio" step="0.01" value="${precio}">
             </div>
             <div class="col-md-1 text-end">
                 <button type="button" class="btn btn-danger btn-sm btn-remove-componente">×</button>
@@ -242,16 +241,16 @@ document.getElementById('add-traje-btn').addEventListener('click', () => {
     ];
     piezas.forEach(pieza => {
         const temp = document.createElement('div');
-        temp.innerHTML = generarComponenteAdicional(pieza.nombre, '', '', pieza.precio);
+        temp.innerHTML = generarComponenteAdicional(pieza.nombre, '', '', pieza.precio, adicionalIdx);
         container.appendChild(temp.firstElementChild);
-        trajeIdx++;
+        adicionalIdx++;
     });
 });
 
 // --- TRAJE NIÑO (solo un adicional, no piezas) ---
 document.getElementById('add-traje-nino-btn').addEventListener('click', () => {
     const container = document.getElementById('trajes-container');
-    const idx = trajeIdx;
+    const idx = adicionalIdx;
     const temp = document.createElement('div');
     temp.innerHTML = `
         <div class="row mb-2 adicional-componente traje-nino-row" data-idx="${idx}">
@@ -280,7 +279,7 @@ document.getElementById('add-traje-nino-btn').addEventListener('click', () => {
         </div>
     `;
     container.appendChild(temp.firstElementChild);
-    trajeIdx++;
+    adicionalIdx++;
 });
 
 // Asignar precio automático al seleccionar talla niño

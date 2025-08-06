@@ -95,24 +95,29 @@
 
     {{-- Agrupación de adicionales --}}
     @php
-        $adicionales = is_string($renta->adicionales) ? json_decode($renta->adicionales, true) : ($renta->adicionales ?? []);
-        $trajesCaballero = [];
-        $trajesNino = [];
-        $otrosAdicionales = [];
+    $adicionales = is_string($renta->adicionales) ? json_decode($renta->adicionales, true) : ($renta->adicionales ?? []);
+    $trajesCaballero = [];
+    $trajesNino = [];
+    $otrosAdicionales = [];
 
-        foreach ($adicionales as $a) {
-            if (isset($a['nombre'])) {
-                $nombre = strtolower($a['nombre']);
-                if (in_array($nombre, ['chaqueta', 'camisa', 'pantalón', 'corbata'])) {
-                    $trajesCaballero[] = $a;
-                } elseif (str_contains($nombre, 'niño')) {
-                    $trajesNino[] = $a;
-                } else {
-                    $otrosAdicionales[] = $a;
-                }
+    foreach ($adicionales as $a) {
+        if (isset($a['nombre'])) {
+            $nombre = strtolower(trim($a['nombre']));
+            if (in_array($nombre, ['chaqueta', 'camisa', 'pantalón', 'pantalon', 'corbata'])) {
+                $trajesCaballero[] = $a;
+            } elseif (str_contains($nombre, 'niño') || str_contains($nombre, 'nino')) {
+                $trajesNino[] = $a;
+            } else {
+                $otrosAdicionales[] = $a;
             }
         }
-    @endphp
+    }
+@endphp
+@php
+    foreach ($adicionales as $a) {
+        echo '[' . $a['nombre'] . '] ';
+    }
+@endphp
 
     @if(count($trajesCaballero))
         <h6 class="mt-4">Traje de Caballero</h6>

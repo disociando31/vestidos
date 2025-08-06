@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Renta;
@@ -144,11 +143,13 @@ class RentaController extends Controller
             $totalAdicionales = 0;
             $adicionalesClean = [];
             foreach ($adicionales as $adicional) {
-                if (!empty($adicional['nombre']) && isset($adicional['precio'])) {
-                    $precio = floatval(str_replace(',', '', $adicional['precio'] ?? 0));
+                $nombre = isset($adicional['nombre']) ? trim($adicional['nombre']) : null;
+                // Aquí: permite guardar aunque el precio esté vacío o sea 0
+                if (!empty($nombre)) {
+                    $precio = isset($adicional['precio']) ? floatval(str_replace(',', '', $adicional['precio'])) : 0;
                     $totalAdicionales += $precio;
                     $adicionalesClean[] = [
-                        'nombre' => $adicional['nombre'],
+                        'nombre' => $nombre,
                         'color' => $adicional['color'] ?? null,
                         'talla' => $adicional['talla'] ?? null,
                         'precio' => $precio,
@@ -290,7 +291,8 @@ class RentaController extends Controller
                 $talla  = isset($adicional['talla'])  ? trim($adicional['talla'])  : null;
                 $precio = isset($adicional['precio']) ? floatval(str_replace(',', '', $adicional['precio'])) : 0;
 
-                if (!empty($nombre) && $precio > 0) {
+                // Aquí: permite guardar aunque el precio esté vacío o sea 0
+                if (!empty($nombre)) {
                     $adicionalesClean[] = [
                         'nombre' => $nombre,
                         'color'  => $color,
@@ -356,4 +358,3 @@ class RentaController extends Controller
         }
     }
 }
-
