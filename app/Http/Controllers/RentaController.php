@@ -75,7 +75,7 @@ public function store(Request $request)
         'notas' => 'nullable|string',
         'recibido_por' => 'nullable|string|max:100',
         'abono_inicial' => 'nullable|numeric|min:0',
-        // No valides aquí los adicionales, porque puede ser un array asociativo
+        // Los adicionales se procesan aparte
     ]);
 
     if ($validator->fails()) {
@@ -106,6 +106,7 @@ public function store(Request $request)
         foreach ($validado['items'] as $item) {
             $producto = Producto::findOrFail($item['producto_id']);
             $subtotal = $producto->precio_renta * $item['cantidad'];
+            // Si los productos no tienen atributos, puedes omitir esto
             $atributos = $producto->atributos->pluck('valor', 'nombre')->toArray();
             $totalAtributos = array_sum(array_map('floatval', $atributos));
             $totalItem = $subtotal + $totalAtributos;
@@ -125,19 +126,21 @@ public function store(Request $request)
             $producto->marcarComoRentado($validado['fecha_devolucion']);
         }
 
-        // 3. Procesar adicionales
+        // 3. Procesar adicionales (incluyendo "Traje Niño")
         $totalAdicionales = 0;
         $adicionalesClean = [];
 
         foreach ($adicionales as $adicional) {
+            // Si hay nombre y precio válido, lo tomamos
             if (!empty($adicional['nombre']) && isset($adicional['precio'])) {
-                $precio = floatval(str_replace(',', '', $adicional['precio']));
+                // Permitir que el precio venga vacío solo si el campo es readonly y no eligieron talla
+                $precio = floatval(str_replace(',', '', $adicional['precio'] ?? 0));
                 $totalAdicionales += $precio;
                 $adicionalesClean[] = [
                     'nombre' => $adicional['nombre'],
                     'color' => $adicional['color'] ?? null,
                     'talla' => $adicional['talla'] ?? null,
-                    'precio' => $precio
+                    'precio' => $precio,
                 ];
             }
         }
@@ -174,6 +177,7 @@ public function store(Request $request)
         return back()->with('error', 'Error al crear la renta: ' . $e->getMessage());
     }
 }
+
 
 public function edit(Renta $renta)
 {
@@ -284,18 +288,24 @@ public function update(Request $request, Renta $renta)
         $totalAdicionales = 0;
         $adicionalesClean = [];
 
-        foreach ($adicionales as $adicional) {
-            if (!empty($adicional['nombre']) && isset($adicional['precio'])) {
-                $precio = floatval(str_replace(',', '', $adicional['precio']));
-                $totalAdicionales += $precio;
-                $adicionalesClean[] = [
-                    'nombre' => $adicional['nombre'],
-                    'color' => $adicional['color'] ?? null,
-                    'talla' => $adicional['talla'] ?? null,
-                    'precio' => $precio
-                ];
-            }
-        }
+foreach ($adicionales as $adicional) {
+    // Normaliza valores, quita espacios
+    $nombre = isset($adicional['nombre']) ? trim($adicional['nombre']) : null;
+    $color  = isset($adicional['color'])  ? trim($adicional['color'])  : null;
+    $talla  = isset($adicional['talla'])  ? trim($adicional['talla'])  : null;
+    $precio = isset($adicional['precio']) ? floatval(str_replace(',', '', $adicional['precio'])) : 0;
+
+    // Solo agrega si nombre no está vacío Y precio es mayor a 0 (esto evita "fantasmas")
+    if (!empty($nombre) && $precio > 0) {
+        $adicionalesClean[] = [
+            'nombre' => $nombre,
+            'color'  => $color,
+            'talla'  => $talla,
+            'precio' => $precio
+        ];
+        $totalAdicionales += $precio;
+    }
+}
 
         $total += $totalAdicionales;
 
@@ -306,7 +316,7 @@ public function update(Request $request, Renta $renta)
             'fecha_devolucion' => $validado['fecha_devolucion'],
             'notas' => $validado['notas'] ?? null,
             'recibido_por' => $validado['recibido_por'] ?? null,
-            'adicionales' => $adicionalesClean,
+            'adicionales' => array_values($adicionalesClean),
             'monto_total' => $total,
         ]);
 

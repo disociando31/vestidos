@@ -37,27 +37,31 @@
     <button type="button" id="add-product-btn" class="btn btn-outline-success mb-3">
         + Añadir otro producto
     </button>
-    <!-- Botón para trajes -->
-<button type="button" class="btn btn-outline-primary mb-3" id="add-traje-btn">
-    + Agregar Traje de Caballero
-</button>
-<!-- Contenedor dinámico para trajes -->
-<div id="trajes-container"></div>
 
+    <!-- Botones para trajes -->
+    <div class="mb-3 d-flex gap-2">
+        <button type="button" class="btn btn-outline-primary" id="add-traje-btn">
+            + Agregar Traje de Caballero
+        </button>
+        <button type="button" class="btn btn-outline-info" id="add-traje-nino-btn">
+            + Agregar Traje de Niño
+        </button>
+    </div>
+    <!-- Contenedor dinámico para trajes -->
+    <div id="trajes-container"></div>
 
-
-   <!-- Adicionales -->
-<h5 class="mt-4">Adicionales</h5>
-<div id="adicionales-container"></div>
-<button type="button" class="btn btn-outline-success mb-3" id="add-adicional-btn">
-    + Añadir adicional
-</button>
+    <!-- Adicionales -->
+    <h5 class="mt-4">Adicionales</h5>
+    <div id="adicionales-container"></div>
+    <button type="button" class="btn btn-outline-success mb-3" id="add-adicional-btn">
+        + Añadir adicional
+    </button>
 
     <!-- Recibido por -->
-<div class="mb-3">
-    <label for="recibido_por" class="form-label">Recibido por</label>
-    <input type="text" name="recibido_por" id="recibido_por" class="form-control" required>
-</div>
+    <div class="mb-3">
+        <label for="recibido_por" class="form-label">Recibido por</label>
+        <input type="text" name="recibido_por" id="recibido_por" class="form-control" required>
+    </div>
 
     <button type="submit" class="btn btn-primary mt-3">Registrar Renta</button>
 </form>
@@ -65,77 +69,19 @@
 
 @push('scripts')
 <script>
-let adicionalIdx = 0;
-function adicionalRow(idx) {
-    return `
-    <div class="row mb-2 adicional-item" data-idx="${idx}">
-        <div class="col-md-2">
-            <select name="adicionales[${idx}][tipo]" class="form-select adicional-tipo" required>
-                <option value="camisa">Camisa</option>
-                <option value="zapatos">Zapatos</option>
-                <option value="corbata">Corbata</option>
-                <option value="cartera">Cartera</option>
-                <option value="otro">Otro</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <input type="text" name="adicionales[${idx}][color]" class="form-control" placeholder="Color">
-        </div>
-        <div class="col-md-2">
-            <input type="text" name="adicionales[${idx}][talla]" class="form-control" placeholder="Talla">
-        </div>
-        <div class="col-md-3">
-            <input type="text" name="adicionales[${idx}][nombre]" class="form-control adicional-nombre" placeholder="Nombre (solo 'Otro')" style="display:none;">
-        </div>
-        <div class="col-md-2">
-            <input type="number" name="adicionales[${idx}][precio]" class="form-control" placeholder="Precio" min="0" step="0.01" required>
-        </div>
-        <div class="col-md-1">
-            <button type="button" class="btn btn-danger btn-remove-adicional">&times;</button>
-        </div>
-    </div>
-    `;
-}
-
-function addAdicionalRow() {
-    $('#adicionales-container').append(adicionalRow(adicionalIdx));
-    adicionalIdx++;
-}
-
-addAdicionalRow();
-
-$('#add-adicional-btn').click(function() {
-    addAdicionalRow();
-});
-
-$('#adicionales-container').on('click', '.btn-remove-adicional', function() {
-    $(this).closest('.adicional-item').remove();
-});
-
-// Mostrar campo nombre SOLO cuando seleccionas "otro"
-$('#adicionales-container').on('change', '.adicional-tipo', function() {
-    const tipo = $(this).val();
-    const row = $(this).closest('.adicional-item');
-    if(tipo === 'otro') {
-        row.find('.adicional-nombre').show();
-    } else {
-        row.find('.adicional-nombre').hide();
-    }
-});
-</script>
-@endpush
-@push('scripts')
-<script>
 const productos = @json($productos->values());
 let prodIdx = 0;
+let trajeIdx = 0;
+let adicionalIdx = 0;
 
+// --- PRODUCTOS ---
 function productoRow(idx) {
     let options = productos.map(prod => {
         let img = prod.img_url;
         let estado = prod.estado;
         let fecha = prod.fecha_disponible ? prod.fecha_disponible.substring(0, 10) : '';
         let disponible = estado === 'disponible' ? 'Disponible' :
-                         (estado === 'rentado' ? `Rentado hasta ${fecha}` : 'No disponible');
+                        (estado === 'rentado' ? `Rentado hasta ${fecha}` : 'No disponible');
         return `<option value="${prod.id}" data-img="${img}" data-estado="${estado}" data-fecha="${fecha}">
             ${prod.nombre} (${disponible})
         </option>`;
@@ -167,25 +113,22 @@ function addProductoRow() {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = productoRow(prodIdx);
     container.appendChild(tempDiv.firstElementChild);
-     // Activar select2 en el nuevo select
     $(`select[name="items[${prodIdx}][producto_id]"]`).select2({
         placeholder: "Seleccionar producto...",
         width: '100%'
-        });
+    });
     prodIdx++;
 }
 
 document.getElementById('add-product-btn').addEventListener('click', addProductoRow);
 document.addEventListener('DOMContentLoaded', () => addProductoRow());
 
-// Remove row
 document.getElementById('productos-container').addEventListener('click', function(e) {
     if (e.target.classList.contains('btn-remove')) {
         e.target.closest('.producto-item').remove();
     }
 });
 
-// Show image and status on change
 $(document).on('change', '.producto-select', function () {
     const idx = $(this).closest('.producto-item').data('idx');
     const selected = this.selectedOptions[0];
@@ -208,21 +151,66 @@ $(document).on('change', '.producto-select', function () {
     `);
 });
 
-
-</script>
-@endpush
-@push('scripts')
-<script>
-    $(document).ready(function() {
-        $('#cliente_id').select2({
-            placeholder: "Selecciona un cliente...",
-            width: '100%'
-        });
+// --- CLIENTES SELECT2 ---
+$(document).ready(function() {
+    $('#cliente_id').select2({
+        placeholder: "Selecciona un cliente...",
+        width: '100%'
     });
-</script>
-<script>
-let trajeIdx = 0;
+});
 
+// --- ADICIONALES DINÁMICOS ---
+function adicionalRow(idx) {
+    return `
+        <div class="row mb-2 adicional-item" data-idx="${idx}">
+            <div class="col-md-4">
+                <select name="adicionales[${idx}][tipo]" class="form-select adicional-tipo" required>
+                    <option value="" selected disabled>Seleccionar tipo...</option>
+                    <option value="cinturon">Cinturón</option>
+                    <option value="pajarita">Pajarita</option>
+                    <option value="chaleco">Chaleco</option>
+                    <option value="otro">Otro</option>
+                </select>
+            </div>
+            <div class="col-md-3 adicional-nombre" style="display:none;">
+                <input type="text" name="adicionales[${idx}][nombre]" class="form-control" placeholder="Nombre adicional">
+            </div>
+            <div class="col-md-2">
+                <input type="text" name="adicionales[${idx}][color]" class="form-control" placeholder="Color">
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="adicionales[${idx}][precio]" class="form-control" placeholder="$ Precio" step="0.01">
+            </div>
+            <div class="col-md-1 text-end">
+                <button type="button" class="btn btn-danger btn-sm btn-remove-adicional">×</button>
+            </div>
+        </div>
+    `;
+}
+function addAdicionalRow() {
+    $('#adicionales-container').append(adicionalRow(adicionalIdx));
+    adicionalIdx++;
+}
+$('#add-adicional-btn').click(function() {
+    addAdicionalRow();
+});
+$('#adicionales-container').on('click', '.btn-remove-adicional', function() {
+    $(this).closest('.adicional-item').remove();
+});
+$('#adicionales-container').on('change', '.adicional-tipo', function() {
+    const tipo = $(this).val();
+    const row = $(this).closest('.adicional-item');
+    if(tipo === 'otro') {
+        row.find('.adicional-nombre').show();
+    } else {
+        row.find('.adicional-nombre').hide();
+    }
+});
+$(document).ready(function() {
+    addAdicionalRow();
+});
+
+// --- TRAJE CABALLERO ---
 function generarComponenteAdicional(nombre, color = '', talla = '', precio = '') {
     return `
         <div class="row mb-2 adicional-componente">
@@ -244,25 +232,76 @@ function generarComponenteAdicional(nombre, color = '', talla = '', precio = '')
         </div>
     `;
 }
-
 document.getElementById('add-traje-btn').addEventListener('click', () => {
     const container = document.getElementById('trajes-container');
-
     const piezas = [
-        'Chaqueta',
-        'Camisa',
-        'Pantalón',
-        'Zapatos'
+        { nombre: 'Chaqueta', precio: 25000 },
+        { nombre: 'Camisa', precio: 15000 },
+        { nombre: 'Pantalón', precio: 20000 },
+        { nombre: 'Corbata', precio: 10000 }
     ];
-
     piezas.forEach(pieza => {
         const temp = document.createElement('div');
-        temp.innerHTML = generarComponenteAdicional(`Traje ${Math.floor(trajeIdx / 4) + 1} - ${pieza}`);
+        temp.innerHTML = generarComponenteAdicional(pieza.nombre, '', '', pieza.precio);
         container.appendChild(temp.firstElementChild);
         trajeIdx++;
     });
 });
 
+// --- TRAJE NIÑO (solo un adicional, no piezas) ---
+document.getElementById('add-traje-nino-btn').addEventListener('click', () => {
+    const container = document.getElementById('trajes-container');
+    const idx = trajeIdx;
+    const temp = document.createElement('div');
+    temp.innerHTML = `
+        <div class="row mb-2 adicional-componente traje-nino-row" data-idx="${idx}">
+            <div class="col-md-3">
+                <input type="text" name="adicionales[${idx}][nombre]" class="form-control" value="Traje Niño" readonly>
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="adicionales[${idx}][color]" class="form-control" placeholder="Color">
+            </div>
+            <div class="col-md-3">
+                <select name="adicionales[${idx}][talla]" class="form-select talla-nino-select" required>
+                    <option value="">Seleccionar talla</option>
+                    <option value="1">1-4</option>
+                    <option value="6">6-10</option>
+                    <option value="12">12-16</option>
+                    <option value="18">18-30</option>
+                    <option value="32">32-54</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="adicionales[${idx}][precio]" class="form-control precio-nino" readonly placeholder="$ Precio">
+            </div>
+            <div class="col-md-1 text-end">
+                <button type="button" class="btn btn-danger btn-sm btn-remove-componente">×</button>
+            </div>
+        </div>
+    `;
+    container.appendChild(temp.firstElementChild);
+    trajeIdx++;
+});
+
+// Asignar precio automático al seleccionar talla niño
+document.getElementById('trajes-container').addEventListener('change', function (e) {
+    if (e.target.classList.contains('talla-nino-select')) {
+        const row = e.target.closest('.traje-nino-row');
+        const precioInput = row.querySelector('.precio-nino');
+        const talla = parseInt(e.target.value);
+
+        let precio = 0;
+        if (talla >= 1 && talla <= 4) precio = 50000;
+        else if (talla >= 6 && talla <= 10) precio = 55000;
+        else if (talla >= 12 && talla <= 16) precio = 60000;
+        else if (talla >= 18 && talla <= 30) precio = 65000;
+        else if (talla >= 32 && talla <= 54) precio = 70000;
+
+        precioInput.value = precio;
+    }
+});
+
+// Botón eliminar componente traje
 document.getElementById('trajes-container').addEventListener('click', function(e) {
     if (e.target.classList.contains('btn-remove-componente')) {
         e.target.closest('.adicional-componente').remove();
@@ -270,4 +309,3 @@ document.getElementById('trajes-container').addEventListener('click', function(e
 });
 </script>
 @endpush
-
