@@ -103,7 +103,7 @@
         foreach ($adicionales as $a) {
             if (isset($a['nombre'])) {
                 $nombre = strtolower($a['nombre']);
-                if (in_array($nombre, ['chaqueta', 'camisa', 'pantalón', 'corbata'])) {
+                if (in_array($nombre, ['Chaqueta', 'camisa', 'pantalón', 'corbata'])) {
                     $trajesCaballero[] = $a;
                 } elseif (str_contains($nombre, 'niño')) {
                     $trajesNino[] = $a;
