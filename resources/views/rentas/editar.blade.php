@@ -99,7 +99,7 @@
                         <button type="button" class="btn btn-danger btn-sm btn-remove-componente">&times;</button>
                     </div>
                 </div>
-            @elseif(isset($adicional['nombre']) && in_array($adicional['nombre'], ['Chaqueta','Camisa','Pantalón','Corbata']))
+            @elseif(isset($adicional['nombre']) && in_array($adicional['nombre'], ['chaqueta','Camisa','Pantalón','Corbata']))
                 <!-- Traje Caballero pieza -->
                 <div class="row mb-2 adicional-componente" data-idx="{{ $index }}">
                     <div class="col-md-3">
@@ -212,7 +212,7 @@ function generarComponenteAdicional(nombre, color = '', talla = '', precio = '')
 }
 document.getElementById('add-traje-btn').addEventListener('click', () => {
     const piezas = [
-        { nombre: 'Chaqueta', precio: 25000 },
+        { nombre: 'chaqueta', precio: 25000 },
         { nombre: 'Camisa', precio: 15000 },
         { nombre: 'Pantalón', precio: 20000 },
         { nombre: 'Corbata', precio: 10000 }

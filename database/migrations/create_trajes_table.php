@@ -21,7 +21,7 @@ return new class extends Migration {
             $table->string('zapatos_talla')->nullable();
             $table->decimal('precio_zapatos', 8, 2)->nullable();
 
-            $table->string('Chaqueta_talla')->nullable();
+            $table->string('chaqueta_talla')->nullable();
             $table->decimal('precio_chaqueta', 8, 2)->nullable();
 
             $table->timestamps();

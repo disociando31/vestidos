@@ -235,7 +235,7 @@ function generarComponenteAdicional(nombre, color = '', talla = '', precio = '')
 document.getElementById('add-traje-btn').addEventListener('click', () => {
     const container = document.getElementById('trajes-container');
     const piezas = [
-        { nombre: 'Chaqueta', precio: 25000 },
+        { nombre: 'chaqueta', precio: 25000 },
         { nombre: 'Camisa', precio: 15000 },
         { nombre: 'Pantalón', precio: 20000 },
         { nombre: 'Corbata', precio: 10000 }

@@ -82,7 +82,7 @@ class RentaController extends Controller
         $adicionales_validos = collect($adicionales)->filter(function($a) {
             $nombre = strtolower($a['nombre'] ?? '');
             return $nombre && (
-                in_array($nombre, ['Chaqueta','camisa','pantalón','pantalon','corbata'])
+                in_array($nombre, ['chaqueta','camisa','pantalón','pantalon','corbata'])
                 || str_contains($nombre, 'niño') || str_contains($nombre, 'nino')
                 || $nombre
             );
@@ -227,7 +227,7 @@ class RentaController extends Controller
         $adicionales_validos = collect($adicionales)->filter(function($a) {
             $nombre = strtolower($a['nombre'] ?? '');
             return $nombre && (
-                in_array($nombre, ['Chaqueta','camisa','pantalón','pantalon','corbata'])
+                in_array($nombre, ['chaqueta','camisa','pantalón','pantalon','corbata'])
                 || str_contains($nombre, 'niño') || str_contains($nombre, 'nino')
                 || $nombre
             );
